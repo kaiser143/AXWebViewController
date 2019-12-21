@@ -1458,7 +1458,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() {
 - (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *__nullable credential))completionHandler {
     // !!!: Do add the security policy if using a custom credential.
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
-    __block NSURLCredential *credential              = nil;
+    NSURLCredential *credential                      = nil;
 
     if (self.challengeHandler) {
         disposition = self.challengeHandler(webView, challenge, &credential);
