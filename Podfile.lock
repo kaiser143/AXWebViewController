@@ -1,5 +1,4 @@
 PODS:
-  - Aspects (1.4.1)
   - AXIndicatorView (0.1.1)
   - AXNavigationBackItemInjection (0.0.2)
   - AXPracticalHUD (2.0.2):
@@ -9,20 +8,33 @@ PODS:
     - NJKWebViewProgress/ProgressView (= 0.2.3)
   - NJKWebViewProgress/Core (0.2.3)
   - NJKWebViewProgress/ProgressView (0.2.3)
+  - Stinger (0.2.8)
+  - ZKCategories (0.2.8)
 
 DEPENDENCIES:
-  - Aspects
   - AXNavigationBackItemInjection
   - AXPracticalHUD
   - NJKWebViewProgress
+  - Stinger
+  - ZKCategories
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - AXIndicatorView
+    - AXNavigationBackItemInjection
+    - AXPracticalHUD
+    - NJKWebViewProgress
+    - Stinger
+    - ZKCategories
 
 SPEC CHECKSUMS:
-  Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
   AXIndicatorView: 566b490a2dd9781d4ffbcc9752be9b9cdc6e728e
   AXNavigationBackItemInjection: efe0446967f3cbcc85a9118decd1e145138912dd
   AXPracticalHUD: 16c3ff6d97c061e80e80897b2e6ac8e330079472
   NJKWebViewProgress: f481fd424cb5ecc27eacae11b5397db92fba9a4d
+  Stinger: b32ad54b685dabf5a301b17e4b1f930b60204b62
+  ZKCategories: dc65371b037737781d15769fcec0a2c29e6c94c5
 
-PODFILE CHECKSUM: 207fd9270929cf3153a3b3d5d06cc43eac68880f
+PODFILE CHECKSUM: 925237d35426ba987ff58fef76e97fa92329c529
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.8.4

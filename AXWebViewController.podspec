@@ -68,7 +68,7 @@ s.author             = { "艾星" => "862099730@qq.com" }
 #
 
 # s.platform     = :ios
-s.platform     = :ios, "7.0"
+s.platform     = :ios, "8.0"
 
 #  When using multiple platforms
 # s.ios.deployment_target = "5.0"
@@ -140,6 +140,7 @@ s.requires_arc = true
 s.dependency "AXPracticalHUD"
 s.dependency "AXNavigationBackItemInjection"
 s.dependency "NJKWebViewProgress"
-s.dependency "Aspects"
+s.dependency "ZKCategories"
+s.dependency "Stinger"
 
 end

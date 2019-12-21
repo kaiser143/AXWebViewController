@@ -25,14 +25,15 @@
 
 #import "AXWebViewController.h"
 #import "AXWebViewControllerActivity.h"
-#import <Aspects/Aspects.h>
 #import <objc/runtime.h>
 #import <StoreKit/StoreKit.h>
 #import <AXPracticalHUD/AXPracticalHUD.h>
+#import <ZKCategories/ZKCategories.h>
+#import <Stinger/Stinger.h>
 
 #ifndef AXWebViewControllerLocalizedString
 #define AXWebViewControllerLocalizedString(key, comment) \
-NSLocalizedStringFromTableInBundle(key, @"AXWebViewController", self.resourceBundle, comment)
+    NSLocalizedStringFromTableInBundle(key, @"AXWebViewController", self.resourceBundle, comment)
 #endif
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 
@@ -43,99 +44,106 @@ typedef struct {
 
 @interface _AXWebViewProgressView : NJKWebViewProgressView
 /// The view controller controller.
-@property(weak, nonatomic) AXWebViewController *webViewController;
+@property (weak, nonatomic) AXWebViewController *webViewController;
 @end
 #endif
 
-@interface AXWebViewController ()<NJKWebViewProgressDelegate, SKStoreProductViewControllerDelegate>
-{
+@interface AXWebViewController () <NJKWebViewProgressDelegate, SKStoreProductViewControllerDelegate> {
     BOOL _loading;
-    UIBarButtonItem * __weak _doneItem;
-    
+    UIBarButtonItem *__weak _doneItem;
+
     NSString *_HTMLString;
     NSURL *_baseURL;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     WKWebViewConfiguration *_configuration;
-    
+
     WKWebViewDidReceiveAuthenticationChallengeHandler _challengeHandler;
     AXSecurityPolicy *_securityPolicy;
 #endif
-    
+
     NSURLRequest *_request;
     /// Located bundle storage.
     NSBundle *_resourceBundle;
-    
+
     /// Should adjust the content inset of web view.
     BOOL _automaticallyAdjustsScrollViewInsets;
     /// Cached content offset state of the web view.
     NSCache *_contentOffsetCache;
 }
 /// Back bar button item of tool bar.
-@property(strong, nonatomic) UIBarButtonItem *backBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *backBarButtonItem;
 /// Forward bar button item of tool bar.
-@property(strong, nonatomic) UIBarButtonItem *forwardBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *forwardBarButtonItem;
 /// Refresh bar button item of tool bar.
-@property(strong, nonatomic) UIBarButtonItem *refreshBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *refreshBarButtonItem;
 /// Stop bar button item of tool bar.
-@property(strong, nonatomic) UIBarButtonItem *stopBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *stopBarButtonItem;
 /// Action bar button item of tool bar.
-@property(strong, nonatomic) UIBarButtonItem *actionBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *actionBarButtonItem;
 /// Navigation back bar button item.
-@property(strong, nonatomic) UIBarButtonItem *navigationBackBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *navigationBackBarButtonItem;
 /// Navigation close bar button item.
-@property(strong, nonatomic) UIBarButtonItem *navigationCloseBarButtonItem;
+@property (strong, nonatomic) UIBarButtonItem *navigationCloseBarButtonItem;
 /// URL from label.
-@property(strong, nonatomic) UILabel *backgroundLabel;
+@property (strong, nonatomic) UILabel *backgroundLabel;
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 /// Progress proxy of progress.
-@property(strong, nonatomic) NJKWebViewProgress *progressProxy;
+@property (strong, nonatomic) NJKWebViewProgress *progressProxy;
 /// Progress view to show progress of requests.
-@property(strong, nonatomic) _AXWebViewProgressView *progressView;
+@property (strong, nonatomic) _AXWebViewProgressView *progressView;
 /// Array that hold snapshots of pages.
-@property(strong, nonatomic) NSMutableArray* snapshots;
+@property (strong, nonatomic) NSMutableArray *snapshots;
 /// Current snapshotview displaying on screen when start swiping.
-@property(strong, nonatomic) UIView* currentSnapshotView;
+@property (strong, nonatomic) UIView *currentSnapshotView;
 /// Previous snapshotview.
-@property(strong, nonatomic) UIView* previousSnapshotView;
+@property (strong, nonatomic) UIView *previousSnapshotView;
 /// Background alpha black view.
-@property(strong, nonatomic) UIView* swipingBackgoundView;
+@property (strong, nonatomic) UIView *swipingBackgoundView;
 /// Left pan ges.
-@property(strong, nonatomic) UIPanGestureRecognizer* swipePanGesture;
+@property (strong, nonatomic) UIPanGestureRecognizer *swipePanGesture;
 /// If is swiping now.
-@property(assign, nonatomic)BOOL isSwipingBack;
+@property (assign, nonatomic) BOOL isSwipingBack;
 /// Updating timer.
-@property(strong, nonatomic) NSTimer *updating;
+@property (strong, nonatomic) NSTimer *updating;
 #endif
 @end
 
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 @interface UIProgressView (WebKit)
 /// Hidden when progress approach 1.0 Default is NO.
-@property(assign, nonatomic) BOOL ax_hiddenWhenProgressApproachFullSize;
+@property (assign, nonatomic) BOOL ax_hiddenWhenProgressApproachFullSize;
 /// The web view controller.
-@property(strong, nonatomic) AXWebViewController *ax_webViewController;
+@property (strong, nonatomic) AXWebViewController *ax_webViewController;
 @end
 
 @interface AXWebViewController ()
 /// Current web view url navigation.
-@property(strong, nonatomic) WKNavigation *navigation;
+@property (strong, nonatomic) WKNavigation *navigation;
 /// Progress view.
-@property(strong, nonatomic) UIProgressView *progressView;
+@property (strong, nonatomic) UIProgressView *progressView;
 /// Container view.
-@property(readonly, nonatomic) UIView *containerView;
+@property (readonly, nonatomic) UIView *containerView;
 @end
 
 @interface AXWebViewController (BundleAccess)
 /// default NSBundle
-@property(strong, nonatomic) NSBundle *resourceBundle;
+@property (strong, nonatomic) NSBundle *resourceBundle;
 @end
 
-@interface _AXWebContainerView: UIView { dispatch_block_t _hitBlock; } @end
+@interface _AXWebContainerView : UIView {
+    dispatch_block_t _hitBlock;
+}
+@end
 @interface _AXWebContainerView (HitTests)
-@property(copy, nonatomic) dispatch_block_t hitBlock;
+@property (copy, nonatomic) dispatch_block_t hitBlock;
 @end
 @implementation _AXWebContainerView
-- (dispatch_block_t)hitBlock { return _hitBlock; } - (void)setHitBlock:(dispatch_block_t)hitBlock { _hitBlock = [hitBlock copy]; }
+- (dispatch_block_t)hitBlock {
+    return _hitBlock;
+}
+- (void)setHitBlock:(dispatch_block_t)hitBlock {
+    _hitBlock = [hitBlock copy];
+}
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     // if (_hitBlock != NULL) _hitBlock();
     // id view = [super hitTest:point withEvent:event];
@@ -161,8 +169,8 @@ static NSString *const kAXNetworkErrorURLKey = @"ax_network_error";
 /// Tag value for container view.
 static NSUInteger const kContainerViewTag = 0x893147;
 
-static NSUInteger const _kiOS8_0 = 8000;
-static NSUInteger const _kiOS9_0 = 9000;
+static NSUInteger const _kiOS8_0  = 8000;
+static NSUInteger const _kiOS9_0  = 9000;
 static NSUInteger const _kiOS10_0 = 10000;
 
 #ifndef kAX_WEB_VIEW_CONTROLLER_DEBUG_LOGGING
@@ -177,7 +185,7 @@ static NSUInteger const _kiOS10_0 = 10000;
 #pragma clang diagnostic ignored "-Wunused-function"
 static inline BOOL AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(NSUInteger plfm) {
     NSString *systemVersion = [[UIDevice currentDevice].systemVersion copy];
-    NSArray *comp = [systemVersion componentsSeparatedByString:@"."];
+    NSArray *comp           = [systemVersion componentsSeparatedByString:@"."];
     if (comp.count == 0 || comp.count == 1) {
         systemVersion = [NSString stringWithFormat:@"%@.0.0", systemVersion];
     } else if (comp.count == 2) {
@@ -185,8 +193,8 @@ static inline BOOL AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(NSUInteger plfm) {
     }
 #if kAX_WEB_VIEW_CONTROLLER_USING_NUMBER_COMPARING
     NSString *currentSystemVersion = [systemVersion stringByReplacingOccurrencesOfString:@"." withString:@""];
-    NSUInteger currentSysVe = [[NSString stringWithFormat:@"%.5ld", (long)[currentSystemVersion integerValue]*10] integerValue];
-    NSUInteger platform = [[NSString stringWithFormat:@"%.5ld", (unsigned long)plfm] integerValue];
+    NSUInteger currentSysVe        = [[NSString stringWithFormat:@"%.5ld", (long)[currentSystemVersion integerValue] * 10] integerValue];
+    NSUInteger platform            = [[NSString stringWithFormat:@"%.5ld", (unsigned long)plfm] integerValue];
 #if kAX_WEB_VIEW_CONTROLLER_DEBUG_LOGGING
     // Log for the versions.
     NSLog(@"CurrentSysVe: %@", @(currentSysVe));
@@ -194,7 +202,7 @@ static inline BOOL AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(NSUInteger plfm) {
 #endif
     return currentSysVe >= platform;
 #else
-    NSString *plat = [NSString stringWithFormat:@"%@.0.0", @(plfm/1000)];
+    NSString *plat            = [NSString stringWithFormat:@"%@.0.0", @(plfm / 1000)];
     NSComparisonResult result = [systemVersion compare:plat options:NSNumericSearch];
     return result == NSOrderedSame || result == NSOrderedDescending;
 #endif
@@ -208,9 +216,15 @@ static inline BOOL AX_WEB_VIEW_CONTROLLER_NOT_USING_WEB_KIT() {
     return !AX_WEB_VIEW_CONTROLLER_NEED_USING_WEB_KIT();
 }
 
-BOOL AX_WEB_VIEW_CONTROLLER_iOS8_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS8_0); }
-BOOL AX_WEB_VIEW_CONTROLLER_iOS9_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS9_0); }
-BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS10_0); }
+BOOL AX_WEB_VIEW_CONTROLLER_iOS8_0_AVAILABLE() {
+    return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS8_0);
+}
+BOOL AX_WEB_VIEW_CONTROLLER_iOS9_0_AVAILABLE() {
+    return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS9_0);
+}
+BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() {
+    return AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS10_0);
+}
 
 #pragma clang diagnostic pop
 
@@ -254,23 +268,23 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)initializer {
     // Set up default values.
-    _showsToolBar = YES;
-    _showsBackgroundLabel = YES;
-    _showsNavigationCloseBarButtonItem = YES;
+    _showsToolBar                          = YES;
+    _showsBackgroundLabel                  = YES;
+    _showsNavigationCloseBarButtonItem     = YES;
     _showsNavigationBackBarButtonItemTitle = YES;
-    _checkUrlCanOpen = YES;
-    _maxAllowedTitleLength = 10;
-    
+    _checkUrlCanOpen                       = YES;
+    _maxAllowedTitleLength                 = 10;
+
     if (@available(iOS 8.0, *)) {
         // Change auto just scroll view insets to NO to fix issue: https://github.com/devedbox/AXWebViewController/issues/10
         self.automaticallyAdjustsScrollViewInsets = NO;
-        self.extendedLayoutIncludesOpaqueBars = NO;
+        self.extendedLayoutIncludesOpaqueBars     = NO;
         /* Using contraints to view instead of bottom layout guide.
          self.edgesForExtendedLayout = UIRectEdgeTop | UIRectEdgeLeft | UIRectEdgeRight;
          */
     } else {
         _timeoutInternal = 30.0;
-        _cachePolicy = NSURLRequestReloadRevalidatingCacheData;
+        _cachePolicy     = NSURLRequestReloadRevalidatingCacheData;
     }
 }
 
@@ -278,8 +292,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     return [self initWithURL:[NSURL URLWithString:urlString]];
 }
 
-- (instancetype)initWithURL:(NSURL*)pageURL {
-    if(self = [self init]) {
+- (instancetype)initWithURL:(NSURL *)pageURL {
+    if (self = [self init]) {
         _URL = pageURL;
     }
     return self;
@@ -302,7 +316,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (instancetype)initWithRequest:(NSURLRequest *)request configuration:(WKWebViewConfiguration *)configuration {
     if (self = [self initWithRequest:request]) {
-        _request = request;
+        _request       = request;
         _configuration = configuration;
     }
     return self;
@@ -312,7 +326,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (instancetype)initWithHTMLString:(NSString *)HTMLString baseURL:(NSURL *)baseURL {
     if (self = [self init]) {
         _HTMLString = HTMLString;
-        _baseURL = baseURL;
+        _baseURL    = baseURL;
     }
     return self;
 }
@@ -322,7 +336,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
     if (@available(iOS 8.0, *)) {
         _AXWebContainerView *container = [_AXWebContainerView new];
-        [container setHitBlock:^() {
+        [container setHitBlock:^(){
             // if (!self.webView.isLoading) [self.webView reloadFromOrigin];
         }];
         [container setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -335,44 +349,45 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [self setupSubviews];
-    
+
     if (_request) {
         [self loadURLRequest:_request];
     } else if (_URL) {
         [self loadURL:_URL];
-    } else if (/*_baseURL && */_HTMLString) {
+    } else if (/*_baseURL && */ _HTMLString) {
         [self loadHTMLString:_HTMLString baseURL:_baseURL];
     } else {
         // Handle none resource case.
         [self loadURL:[NSURL fileURLWithPath:kAX404NotFoundHTMLPath]];
     }
-    
+
     // Config navigation item
     self.navigationItem.leftItemsSupplementBackButton = YES;
-    
+
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     [self progressProxy];
-    self.view.backgroundColor = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
+    self.view.backgroundColor                         = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
     self.progressView.progressBarView.backgroundColor = self.navigationController.navigationBar.tintColor;
 #else
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor           = [UIColor whiteColor];
     self.progressView.progressTintColor = self.navigationController.navigationBar.tintColor;
     [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:NULL];
-    
-    // [_webView.scrollView addObserver:self forKeyPath:@"backgroundColor" options:NSKeyValueObservingOptionNew context:NULL];
+
+// [_webView.scrollView addObserver:self forKeyPath:@"backgroundColor" options:NSKeyValueObservingOptionNew context:NULL];
 #endif
 }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    
+
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
         [self updateNavigationItems];
     }
-    if (@available(iOS 11.0, *)) {} else {
-        id<UILayoutSupport> topLayoutGuide = self.topLayoutGuide;
+    if (@available(iOS 11.0, *)) {
+    } else {
+        id<UILayoutSupport> topLayoutGuide    = self.topLayoutGuide;
         id<UILayoutSupport> bottomLayoutGuide = self.bottomLayoutGuide;
 
         UIEdgeInsets contentInsets = UIEdgeInsetsMake(topLayoutGuide.length, 0.0, bottomLayoutGuide.length, 0.0);
@@ -384,20 +399,20 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
     if (self.navigationController) {
         [self updateFrameOfProgressView];
         [self.navigationController.navigationBar addSubview:self.progressView];
     }
-    
+
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
         [self updateToolbarItems];
     }
-    
+
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
         [self updateNavigationItems];
     }
-    
+
     if (self.navigationController && [self.navigationController isBeingPresented]) {
         UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                                     target:self
@@ -406,7 +421,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             self.navigationItem.leftBarButtonItem = doneButton;
         else
             self.navigationItem.rightBarButtonItem = doneButton;
-        _doneItem = doneButton;
+        _doneItem                                  = doneButton;
     }
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone && _showsToolBar && _navigationType == AXWebViewControllerNavigationToolItem) {
         [self.navigationController setToolbarHidden:NO animated:NO];
@@ -415,34 +430,34 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    
+
     // [self updateNavigationItems];
-    
+
     //----- SETUP DEVICE ORIENTATION CHANGE NOTIFICATION -----
-    UIDevice *device = [UIDevice currentDevice]; //Get the device object
+    UIDevice *device = [UIDevice currentDevice];            //Get the device object
     [device beginGeneratingDeviceOrientationNotifications]; //Tell it to start monitoring the accelerometer for orientation
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification  object:device];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:device];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    
+
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    
+
     if (self.navigationController) {
         [_progressView removeFromSuperview];
     }
-    
+
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-    
+
     [self.navigationItem setLeftBarButtonItems:nil animated:NO];
-    
+
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone && _showsToolBar && _navigationType == AXWebViewControllerNavigationToolItem) {
         [self.navigationController setToolbarHidden:YES animated:animated];
     }
-    
+
     UIDevice *device = [UIDevice currentDevice]; //Get the device object
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:device];
 }
@@ -454,7 +469,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
         return YES;
-    
+
     return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
 }
 
@@ -473,7 +488,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (BOOL)navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
     // Should not pop. It appears clicked the back bar button item. We should decide the action according to the content of web view.
     if ([self.navigationController.topViewController isKindOfClass:[AXWebViewController class]]) {
-        AXWebViewController* webVC = (AXWebViewController*)self.navigationController.topViewController;
+        AXWebViewController *webVC = (AXWebViewController *)self.navigationController.topViewController;
         // If web view can go back.
         if (webVC.webView.canGoBack) {
             // Stop loading if web view is loading.
@@ -492,7 +507,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             // Pop view controlers directly.
             return YES;
         }
-    }else{
+    } else {
         // Pop view controllers directly.
         return YES;
     }
@@ -502,12 +517,12 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [_webView stopLoading];
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    _webView.UIDelegate = nil;
+    _webView.UIDelegate         = nil;
     _webView.navigationDelegate = nil;
     [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
     [_webView removeObserver:self forKeyPath:@"scrollView.contentOffset"];
     [_webView removeObserver:self forKeyPath:@"title"];
-    // [_webView.scrollView removeObserver:self forKeyPath:@"backgroundColor"];
+// [_webView.scrollView removeObserver:self forKeyPath:@"backgroundColor"];
 #else
     _webView.delegate = nil;
 #endif
@@ -533,13 +548,12 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         if (@available(iOS 11.0, *)) {
             [self.webView.scrollView setContentInset:self.view.safeAreaInsets];
         } else {
-            
         }
     }
 }
 
 #pragma mark - KVO
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *, id> *)change context:(void *)context {
     if ([keyPath isEqualToString:@"estimatedProgress"]) {
         // Add progress view to navigation bar.
         if (self.navigationController && self.progressView.superview != self.navigationController.navigationBar) {
@@ -562,7 +576,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         // #endif
     } else if ([keyPath isEqualToString:@"scrollView.contentOffset"]) {
         // Get the current content offset.
-        CGPoint contentOffset = [change[NSKeyValueChangeNewKey] CGPointValue];
+        CGPoint contentOffset      = [change[NSKeyValueChangeNewKey] CGPointValue];
         _backgroundLabel.transform = CGAffineTransformMakeTranslation(0, -contentOffset.y);
     } else if ([keyPath isEqualToString:@"title"]) {
         // Update title of vc.
@@ -580,7 +594,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (_webView) return _webView;
     WKWebViewConfiguration *config = _configuration;
     if (!config) {
-        config = [[WKWebViewConfiguration alloc] init];
+        config                             = [[WKWebViewConfiguration alloc] init];
         config.preferences.minimumFontSize = 9.0;
         if ([config respondsToSelector:@selector(setAllowsInlineMediaPlayback:)]) {
             [config setAllowsInlineMediaPlayback:YES];
@@ -588,35 +602,34 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         if (@available(iOS 9.0, *)) {
             if ([config respondsToSelector:@selector(setApplicationNameForUserAgent:)]) {
 
-            [config setApplicationNameForUserAgent:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"]];
+                [config setApplicationNameForUserAgent:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"]];
             }
         } else {
             // Fallback on earlier versions
         }
-        
+
         if (@available(iOS 10.0, *)) {
-            if ([config respondsToSelector:@selector(setMediaTypesRequiringUserActionForPlayback:)]){
+            if ([config respondsToSelector:@selector(setMediaTypesRequiringUserActionForPlayback:)]) {
                 [config setMediaTypesRequiringUserActionForPlayback:WKAudiovisualMediaTypeNone];
             }
         } else if (@available(iOS 9.0, *)) {
-           if ( [config respondsToSelector:@selector(setRequiresUserActionForMediaPlayback:)]) {
+            if ([config respondsToSelector:@selector(setRequiresUserActionForMediaPlayback:)]) {
                 [config setRequiresUserActionForMediaPlayback:NO];
-           }
+            }
         } else {
-            if ( [config respondsToSelector:@selector(setMediaPlaybackRequiresUserAction:)]) {
+            if ([config respondsToSelector:@selector(setMediaPlaybackRequiresUserAction:)]) {
                 [config setMediaPlaybackRequiresUserAction:NO];
             }
         }
-        
     }
-    _webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:config];
+    _webView                                     = [[WKWebView alloc] initWithFrame:CGRectZero configuration:config];
     _webView.allowsBackForwardNavigationGestures = YES;
-    _webView.backgroundColor = [UIColor clearColor];
-    _webView.scrollView.backgroundColor = [UIColor clearColor];
+    _webView.backgroundColor                     = [UIColor clearColor];
+    _webView.scrollView.backgroundColor          = [UIColor clearColor];
     // Set auto layout enabled.
     _webView.translatesAutoresizingMaskIntoConstraints = NO;
     if (_enabledWebViewUIDelegate) _webView.UIDelegate = self;
-    _webView.navigationDelegate = self;
+    _webView.navigationDelegate                        = self;
     // Obverse the content offset of the scroll view.
     [_webView addObserver:self forKeyPath:@"scrollView.contentOffset" options:NSKeyValueObservingOptionNew context:NULL];
     // Obverse title. Fix issue: https://github.com/devedbox/AXWebViewController/issues/35
@@ -626,26 +639,28 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (UIProgressView *)progressView {
     if (_progressView) return _progressView;
-    CGFloat progressBarHeight = 2.0f;
-    CGRect navigationBarBounds = self.navigationController.navigationBar.bounds;
-    CGRect barFrame = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
-    _progressView = [[UIProgressView alloc] initWithFrame:barFrame];
-    _progressView.trackTintColor = [UIColor clearColor];
+    CGFloat progressBarHeight                           = 2.0f;
+    CGRect navigationBarBounds                          = self.navigationController.navigationBar.bounds;
+    CGRect barFrame                                     = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
+    _progressView                                       = [[UIProgressView alloc] initWithFrame:barFrame];
+    _progressView.trackTintColor                        = [UIColor clearColor];
     _progressView.ax_hiddenWhenProgressApproachFullSize = YES;
-    _progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    _progressView.autoresizingMask                      = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     // Set the web view controller to progress view.
-    __weak typeof(self) wself = self;
+    __weak typeof(self) wself          = self;
     _progressView.ax_webViewController = wself;
     return _progressView;
 }
 
-- (UIView *)containerView { return [self.view viewWithTag:kContainerViewTag]; }
+- (UIView *)containerView {
+    return [self.view viewWithTag:kContainerViewTag];
+}
 #else
-- (UIWebView*)webView {
+- (UIWebView *)webView {
     if (_webView) return _webView;
-    _webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
+    _webView                 = [[UIWebView alloc] initWithFrame:self.view.bounds];
     _webView.backgroundColor = [UIColor clearColor];
-    _webView.delegate = self;
+    _webView.delegate        = self;
     _webView.scalesPageToFit = YES;
     [_webView addGestureRecognizer:self.swipePanGesture];
     _webView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -653,21 +668,21 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 #endif
 
-- (NSBundle *)resourceBundle{
+- (NSBundle *)resourceBundle {
     if (_resourceBundle) return _resourceBundle;
     NSBundle *bundle = [NSBundle bundleForClass:AXWebViewController.class];
-    
-    NSString *resourcePath = [bundle pathForResource:@"AXWebViewController" ofType:@"bundle"] ;
-    
-    if (resourcePath){
+
+    NSString *resourcePath = [bundle pathForResource:@"AXWebViewController" ofType:@"bundle"];
+
+    if (resourcePath) {
         NSBundle *bundle2 = [NSBundle bundleWithPath:resourcePath];
-        if (bundle2){
+        if (bundle2) {
             bundle = bundle2;
         }
     }
-    
+
     _resourceBundle = bundle;
-    
+
     return _resourceBundle;
 }
 
@@ -675,7 +690,9 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (_backBarButtonItem) return _backBarButtonItem;
 
     _backBarButtonItem = [[UIBarButtonItem alloc] initWithImage:
-                          [UIImage imageNamed:@"AXWebViewControllerBack" inBundle:self.resourceBundle compatibleWithTraitCollection:nil]
+                                                      [UIImage imageNamed:@"AXWebViewControllerBack"
+                                                                               inBundle:self.resourceBundle
+                                                          compatibleWithTraitCollection:nil]
                                                           style:UIBarButtonItemStylePlain
                                                          target:self
                                                          action:@selector(goBackClicked:)];
@@ -685,9 +702,11 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (UIBarButtonItem *)forwardBarButtonItem {
     if (_forwardBarButtonItem) return _forwardBarButtonItem;
-    
+
     _forwardBarButtonItem = [[UIBarButtonItem alloc] initWithImage:
-                             [UIImage imageNamed:@"AXWebViewControllerNext" inBundle:self.resourceBundle compatibleWithTraitCollection:nil]
+                                                         [UIImage imageNamed:@"AXWebViewControllerNext"
+                                                                                  inBundle:self.resourceBundle
+                                                             compatibleWithTraitCollection:nil]
                                                              style:UIBarButtonItemStylePlain
                                                             target:self
                                                             action:@selector(goForwardClicked:)];
@@ -716,7 +735,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (UIBarButtonItem *)navigationBackBarButtonItem {
     if (_navigationBackBarButtonItem) return _navigationBackBarButtonItem;
 
-    UIImage* backItemImage = [[[UINavigationBar appearance] backIndicatorImage] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]?:[[UIImage imageNamed:@"backItemImage" inBundle:self.resourceBundle compatibleWithTraitCollection:nil]  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage *backItemImage = [[[UINavigationBar appearance] backIndicatorImage] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] ?: [[UIImage imageNamed:@"backItemImage" inBundle:self.resourceBundle compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIGraphicsBeginImageContextWithOptions(backItemImage.size, NO, backItemImage.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, 0, backItemImage.size.height);
@@ -728,13 +747,13 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     CGContextFillRect(context, rect);
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    UIImage* backItemHlImage = newImage?:[[UIImage imageNamed:@"backItemImage-hl" inBundle:self.resourceBundle compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIButton* backButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    NSDictionary *attr = [[UIBarButtonItem appearance] titleTextAttributesForState:UIControlStateNormal];
+    UIImage *backItemHlImage               = newImage ?: [[UIImage imageNamed:@"backItemImage-hl" inBundle:self.resourceBundle compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIButton *backButton                   = [UIButton buttonWithType:UIButtonTypeSystem];
+    NSDictionary *attr                     = [[UIBarButtonItem appearance] titleTextAttributesForState:UIControlStateNormal];
     NSString *backBarButtonItemTitleString = self.showsNavigationBackBarButtonItemTitle ? AXWebViewControllerLocalizedString(@"back", @"back") : @"    ";
     if (attr) {
         [backButton setAttributedTitle:[[NSAttributedString alloc] initWithString:backBarButtonItemTitleString attributes:attr] forState:UIControlStateNormal];
-        UIOffset offset = [[UIBarButtonItem appearance] backButtonTitlePositionAdjustmentForBarMetrics:UIBarMetricsDefault];
+        UIOffset offset            = [[UIBarButtonItem appearance] backButtonTitlePositionAdjustmentForBarMetrics:UIBarMetricsDefault];
         backButton.titleEdgeInsets = UIEdgeInsetsMake(offset.vertical, offset.horizontal, 0, 0);
         backButton.imageEdgeInsets = UIEdgeInsetsMake(offset.vertical, offset.horizontal, 0, 0);
     } else {
@@ -746,7 +765,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [backButton setImage:backItemImage forState:UIControlStateNormal];
     [backButton setImage:backItemHlImage forState:UIControlStateHighlighted];
     [backButton sizeToFit];
-    
+
     [backButton addTarget:self action:@selector(navigationItemHandleBack:) forControlEvents:UIControlEventTouchUpInside];
     _navigationBackBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:backButton];
     return _navigationBackBarButtonItem;
@@ -768,19 +787,19 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 - (NJKWebViewProgress *)progressProxy {
     if (_progressProxy) return _progressProxy;
-    _progressProxy = [[NJKWebViewProgress alloc] init];
-    self.webView.delegate = _progressProxy;
+    _progressProxy                      = [[NJKWebViewProgress alloc] init];
+    self.webView.delegate               = _progressProxy;
     _progressProxy.webViewProxyDelegate = self;
-    _progressProxy.progressDelegate = self;
+    _progressProxy.progressDelegate     = self;
     return _progressProxy;
 }
 
 - (_AXWebViewProgressView *)progressView {
     if (_progressView) return _progressView;
-    CGFloat progressBarHeight = 2.0f;
-    CGRect navigationBarBounds = self.navigationController.navigationBar.bounds;
-    CGRect barFrame = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
-    _progressView = [[_AXWebViewProgressView alloc] initWithFrame:barFrame];
+    CGFloat progressBarHeight      = 2.0f;
+    CGRect navigationBarBounds     = self.navigationController.navigationBar.bounds;
+    CGRect barFrame                = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
+    _progressView                  = [[_AXWebViewProgressView alloc] initWithFrame:barFrame];
     _progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     // Set the web view controller to progress view.
     _progressView.webViewController = self;
@@ -796,10 +815,10 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     } else {
         _backgroundLabel.textColor = [UIColor colorWithRed:0.322 green:0.322 blue:0.322 alpha:1.00];
     }
-    _backgroundLabel.font = [UIFont systemFontOfSize:12];
-    _backgroundLabel.numberOfLines = 0;
-    _backgroundLabel.textAlignment = NSTextAlignmentCenter;
-    _backgroundLabel.backgroundColor = [UIColor clearColor];
+    _backgroundLabel.font                                      = [UIFont systemFontOfSize:12];
+    _backgroundLabel.numberOfLines                             = 0;
+    _backgroundLabel.textAlignment                             = NSTextAlignmentCenter;
+    _backgroundLabel.backgroundColor                           = [UIColor clearColor];
     _backgroundLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [_backgroundLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     _backgroundLabel.hidden = !self.showsBackgroundLabel;
@@ -811,29 +830,29 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(UIView*)swipingBackgoundView{
+- (UIView *)swipingBackgoundView {
     if (!_swipingBackgoundView) {
-        _swipingBackgoundView = [[UIView alloc] initWithFrame:self.view.bounds];
+        _swipingBackgoundView                 = [[UIView alloc] initWithFrame:self.view.bounds];
         _swipingBackgoundView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
     }
     return _swipingBackgoundView;
 }
 
--(NSMutableArray*)snapshots{
+- (NSMutableArray *)snapshots {
     if (!_snapshots) {
         _snapshots = [NSMutableArray array];
     }
     return _snapshots;
 }
 
--(BOOL)isSwipingBack{
+- (BOOL)isSwipingBack {
     if (!_isSwipingBack) {
         _isSwipingBack = NO;
     }
     return _isSwipingBack;
 }
 
--(UIPanGestureRecognizer*)swipePanGesture{
+- (UIPanGestureRecognizer *)swipePanGesture {
     if (!_swipePanGesture) {
         _swipePanGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(swipePanGestureHandler:)];
     }
@@ -857,12 +876,12 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     _timeoutInternal = timeoutInternal;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     NSMutableURLRequest *request = [_request mutableCopy];
-    request.timeoutInterval = _timeoutInternal;
-    _navigation = [_webView loadRequest:request];
-    _request = [request copy];
+    request.timeoutInterval      = _timeoutInternal;
+    _navigation                  = [_webView loadRequest:request];
+    _request                     = [request copy];
 #else
     NSMutableURLRequest *request = [self.webView.request mutableCopy];
-    request.timeoutInterval = _timeoutInternal;
+    request.timeoutInterval      = _timeoutInternal;
     [_webView loadRequest:request];
 #endif
 }
@@ -871,12 +890,12 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     _cachePolicy = cachePolicy;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     NSMutableURLRequest *request = [_request mutableCopy];
-    request.cachePolicy = _cachePolicy;
-    _navigation = [_webView loadRequest:request];
-    _request = [request copy];
+    request.cachePolicy          = _cachePolicy;
+    _navigation                  = [_webView loadRequest:request];
+    _request                     = [request copy];
 #else
     NSMutableURLRequest *request = [self.webView.request mutableCopy];
-    request.cachePolicy = _cachePolicy;
+    request.cachePolicy          = _cachePolicy;
     [_webView loadRequest:request];
 #endif
 }
@@ -887,17 +906,17 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [self updateToolbarItems];
     }
 }
-- (void)setShowsBackgroundLabel:(BOOL)showsBackgroundLabel{
+- (void)setShowsBackgroundLabel:(BOOL)showsBackgroundLabel {
     _backgroundLabel.hidden = !showsBackgroundLabel;
-    _showsBackgroundLabel = showsBackgroundLabel;
+    _showsBackgroundLabel   = showsBackgroundLabel;
 }
-- (void)setShowsNavigationCloseBarButtonItem:(BOOL)showsNavigationCloseBarButtonItem{
-    _navigationCloseBarButtonItem = nil;
+- (void)setShowsNavigationCloseBarButtonItem:(BOOL)showsNavigationCloseBarButtonItem {
+    _navigationCloseBarButtonItem      = nil;
     _showsNavigationCloseBarButtonItem = showsNavigationCloseBarButtonItem;
     [self updateNavigationItems];
 }
-- (void)setShowsNavigationBackBarButtonItemTitle:(BOOL)showsNavigationBackBarButtonItemTitle{
-    _navigationBackBarButtonItem = nil;
+- (void)setShowsNavigationBackBarButtonItemTitle:(BOOL)showsNavigationBackBarButtonItemTitle {
+    _navigationBackBarButtonItem           = nil;
     _showsNavigationBackBarButtonItemTitle = showsNavigationBackBarButtonItemTitle;
     [self updateNavigationItems];
 }
@@ -915,8 +934,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 #pragma mark - Public
 - (void)loadURL:(NSURL *)pageURL {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:pageURL];
-    request.timeoutInterval = _timeoutInternal;
-    request.cachePolicy = _cachePolicy;
+    request.timeoutInterval      = _timeoutInternal;
+    request.cachePolicy          = _cachePolicy;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     _navigation = [_webView loadRequest:request];
 #else
@@ -934,36 +953,37 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 
 - (void)loadHTMLString:(NSString *)HTMLString baseURL:(NSURL *)baseURL {
-    _baseURL = baseURL;
+    _baseURL    = baseURL;
     _HTMLString = HTMLString;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     _navigation = [_webView loadHTMLString:HTMLString baseURL:baseURL];
 #else
-    [_webView loadHTMLString:HTMLString baseURL:baseURL];
+    [_webView loadHTMLString:HTMLString
+                     baseURL:baseURL];
 #endif
 }
-- (void)willGoBack{
+- (void)willGoBack {
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerWillGoBack:)]) {
         [_delegate webViewControllerWillGoBack:self];
     }
 }
-- (void)willGoForward{
+- (void)willGoForward {
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerWillGoForward:)]) {
         [_delegate webViewControllerWillGoForward:self];
     }
 }
-- (void)willReload{
+- (void)willReload {
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerWillReload:)]) {
         [_delegate webViewControllerWillReload:self];
     }
 }
-- (void)willStop{
+- (void)willStop {
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerWillStop:)]) {
         [_delegate webViewControllerWillStop:self];
     }
 }
-- (void)didStartLoad{
-    _backgroundLabel.text = AXWebViewControllerLocalizedString(@"loading", @"Loading");
+- (void)didStartLoad {
+    _backgroundLabel.text     = AXWebViewControllerLocalizedString(@"loading", @"Loading");
     self.navigationItem.title = AXWebViewControllerLocalizedString(@"loading", @"Loading");
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
@@ -974,7 +994,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     }
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     _progressView.progress = 0.0;
-    _updating = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(updatingProgress:) userInfo:nil repeats:YES];
+    _updating              = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(updatingProgress:) userInfo:nil repeats:YES];
 #endif
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerDidStartLoad:)]) {
         [_delegate webViewControllerDidStartLoad:self];
@@ -1008,7 +1028,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (AX_WEB_VIEW_CONTROLLER_NEED_USING_WEB_KIT() && [object isKindOfClass:WKNavigationClass]) [self didStartLoadWithNavigation:object];
 }
 
-- (void)didFinishLoad{
+- (void)didFinishLoad {
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     @try {
         [self hookWebContentCommitPreviewHandler];
@@ -1016,7 +1036,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     } @finally {
     }
 #endif
-    
+
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
         [self updateNavigationItems];
@@ -1024,24 +1044,25 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
         [self updateToolbarItems];
     }
-    
+
     [self _updateTitleOfWebVC];
-    
+
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *bundle = ([infoDictionary objectForKey:@"CFBundleDisplayName"]?:[infoDictionary objectForKey:@"CFBundleName"])?:[infoDictionary objectForKey:@"CFBundleIdentifier"];
+    NSString *bundle             = ([infoDictionary objectForKey:@"CFBundleDisplayName"] ?: [infoDictionary objectForKey:@"CFBundleName"]) ?: [infoDictionary objectForKey:@"CFBundleIdentifier"];
     NSString *host;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     host = _webView.URL.host;
 #else
     host = _webView.request.URL.host;
 #endif
-    _backgroundLabel.text = [NSString stringWithFormat:@"%@\"%@\"%@.", AXWebViewControllerLocalizedString(@"web page",@""), host?:bundle, AXWebViewControllerLocalizedString(@"provided",@"")];
+    _backgroundLabel.text = [NSString stringWithFormat:@"%@\"%@\"%@.", AXWebViewControllerLocalizedString(@"web page", @""), host ?: bundle, AXWebViewControllerLocalizedString(@"provided", @"")];
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerDidFinishLoad:)]) {
         [_delegate webViewControllerDidFinishLoad:self];
     }
     _loading = NO;
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    [_progressView setProgress:0.9 animated:YES];
+    [_progressView setProgress:0.9
+                      animated:YES];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (_progressView.progress != 1.0) {
             [_progressView setProgress:1.0 animated:YES];
@@ -1050,15 +1071,15 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 #endif
 }
 
-- (void)didFailLoadWithError:(NSError *)error{
+- (void)didFailLoadWithError:(NSError *)error {
     // #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    if (error.code == NSURLErrorCannotFindHost) {// 404
+    if (error.code == NSURLErrorCannotFindHost) { // 404
         [self loadURL:[NSURL fileURLWithPath:kAX404NotFoundHTMLPath]];
     } else {
         [self loadURL:[NSURL fileURLWithPath:kAXNetworkErrorHTMLPath]];
     }
     // #endif
-    _backgroundLabel.text = [NSString stringWithFormat:@"%@%@",AXWebViewControllerLocalizedString(@"load failed:", nil) , error.localizedDescription];
+    _backgroundLabel.text     = [NSString stringWithFormat:@"%@%@", AXWebViewControllerLocalizedString(@"load failed:", nil), error.localizedDescription];
     self.navigationItem.title = AXWebViewControllerLocalizedString(@"load failed", nil);
     if (_navigationType == AXWebViewControllerNavigationBarItem) {
         [self updateNavigationItems];
@@ -1076,27 +1097,26 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 + (void)clearWebCacheCompletion:(dispatch_block_t)completion {
     if (@available(iOS 9.0, *)) {
         NSSet *websiteDataTypes = [WKWebsiteDataStore allWebsiteDataTypes];
-        NSDate *dateFrom = [NSDate dateWithTimeIntervalSince1970:0];
+        NSDate *dateFrom        = [NSDate dateWithTimeIntervalSince1970:0];
         [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:websiteDataTypes modifiedSince:dateFrom completionHandler:completion];
     } else {
-        NSString *libraryDir = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
-        NSString *bundleId  =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
-        NSString *webkitFolderInLib = [NSString stringWithFormat:@"%@/WebKit",libraryDir];
-        NSString *webKitFolderInCaches = [NSString stringWithFormat:@"%@/Caches/%@/WebKit",libraryDir,bundleId];
-        NSString *webKitFolderInCachesfs = [NSString stringWithFormat:@"%@/Caches/%@/fsCachedData",libraryDir,bundleId];
-        
+        NSString *libraryDir             = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
+        NSString *bundleId               = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+        NSString *webkitFolderInLib      = [NSString stringWithFormat:@"%@/WebKit", libraryDir];
+        NSString *webKitFolderInCaches   = [NSString stringWithFormat:@"%@/Caches/%@/WebKit", libraryDir, bundleId];
+        NSString *webKitFolderInCachesfs = [NSString stringWithFormat:@"%@/Caches/%@/fsCachedData", libraryDir, bundleId];
+
         NSError *error;
         /* iOS8.0 WebView Cache path */
         [[NSFileManager defaultManager] removeItemAtPath:webKitFolderInCaches error:&error];
         [[NSFileManager defaultManager] removeItemAtPath:webkitFolderInLib error:nil];
-        
+
         /* iOS7.0 WebView Cache path */
         [[NSFileManager defaultManager] removeItemAtPath:webKitFolderInCachesfs error:&error];
         if (completion) {
             completion();
         }
     }
-    
 }
 
 #pragma mark - Actions
@@ -1149,14 +1169,14 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 #else
     URL = _webView.request.URL;
 #endif
-    
+
     UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:@[URL] applicationActivities:activities];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         UIPopoverPresentationController *popover = activityController.popoverPresentationController;
-        popover.barButtonItem = sender;
-        popover.permittedArrowDirections = UIPopoverArrowDirectionAny;
+        popover.barButtonItem                    = sender;
+        popover.permittedArrowDirections         = UIPopoverArrowDirectionAny;
     }
-    
+
     [self presentViewController:activityController animated:YES completion:nil];
 }
 
@@ -1184,17 +1204,17 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(void)swipePanGestureHandler:(UIPanGestureRecognizer*)panGesture{
+- (void)swipePanGestureHandler:(UIPanGestureRecognizer *)panGesture {
     CGPoint translation = [panGesture translationInView:self.webView];
-    CGPoint location = [panGesture locationInView:self.webView];
-    
+    CGPoint location    = [panGesture locationInView:self.webView];
+
     if (panGesture.state == UIGestureRecognizerStateBegan) {
-        if (location.x <= 50 && translation.x >= 0) {  //开始动画
+        if (location.x <= 50 && translation.x >= 0) { //开始动画
             [self startPopSnapshotView];
         }
-    }else if (panGesture.state == UIGestureRecognizerStateCancelled || panGesture.state == UIGestureRecognizerStateEnded){
+    } else if (panGesture.state == UIGestureRecognizerStateCancelled || panGesture.state == UIGestureRecognizerStateEnded) {
         [self endPopSnapShotView];
-    }else if (panGesture.state == UIGestureRecognizerStateChanged){
+    } else if (panGesture.state == UIGestureRecognizerStateChanged) {
         [self popSnapShotViewWithPanGestureDistance:translation.x];
     }
 }
@@ -1219,21 +1239,25 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     // Get host name of url.
     NSString *host = webView.URL.host;
     // Init the alert view controller.
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:host?:AXWebViewControllerLocalizedString(@"messages", nil) message:message preferredStyle: UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:host ?: AXWebViewControllerLocalizedString(@"messages", nil) message:message preferredStyle:UIAlertControllerStyleAlert];
     // Init the cancel action.
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-        if (completionHandler != NULL) {
-            completionHandler();
-        }
-    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel")
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:^(UIAlertAction *_Nonnull action) {
+                                                             if (completionHandler != NULL) {
+                                                                 completionHandler();
+                                                             }
+                                                         }];
     // Init the ok action.
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-        if (completionHandler != NULL) {
-            completionHandler();
-        }
-    }];
-    
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm")
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:^(UIAlertAction *action) {
+                                                         [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                         if (completionHandler != NULL) {
+                                                             completionHandler();
+                                                         }
+                                                     }];
+
     // Add actions.
     [alert addAction:cancelAction];
     [alert addAction:okAction];
@@ -1243,54 +1267,62 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     // Get the host name.
     NSString *host = webView.URL.host;
     // Initialize alert view controller.
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:host?:AXWebViewControllerLocalizedString(@"messages", nil) message:message preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:host ?: AXWebViewControllerLocalizedString(@"messages", nil) message:message preferredStyle:UIAlertControllerStyleAlert];
     // Initialize cancel action.
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-        if (completionHandler != NULL) {
-            completionHandler(NO);
-        }
-    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel")
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:^(UIAlertAction *action) {
+                                                             [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                             if (completionHandler != NULL) {
+                                                                 completionHandler(NO);
+                                                             }
+                                                         }];
     // Initialize ok action.
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-        if (completionHandler != NULL) {
-            completionHandler(YES);
-        }
-    }];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm")
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:^(UIAlertAction *action) {
+                                                         [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                         if (completionHandler != NULL) {
+                                                             completionHandler(YES);
+                                                         }
+                                                     }];
     // Add actions.
     [alert addAction:cancelAction];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:NULL];
 }
-- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * __nullable result))completionHandler {
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *__nullable result))completionHandler {
     // Get the host of url.
     NSString *host = webView.URL.host;
     // Initialize alert view controller.
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:prompt?:AXWebViewControllerLocalizedString(@"messages", nil) message:host preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:prompt ?: AXWebViewControllerLocalizedString(@"messages", nil) message:host preferredStyle:UIAlertControllerStyleAlert];
     // Add text field.
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-        textField.placeholder = defaultText?:AXWebViewControllerLocalizedString(@"input", nil);
-        textField.font = [UIFont systemFontOfSize:12];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *_Nonnull textField) {
+        textField.placeholder = defaultText ?: AXWebViewControllerLocalizedString(@"input", nil);
+        textField.font        = [UIFont systemFontOfSize:12];
     }];
     // Initialize cancel action.
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-        // Get inputed string.
-        NSString *string = [alert.textFields firstObject].text;
-        if (completionHandler != NULL) {
-            completionHandler(string?:defaultText);
-        }
-    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel")
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:^(UIAlertAction *action) {
+                                                             [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                             // Get inputed string.
+                                                             NSString *string = [alert.textFields firstObject].text;
+                                                             if (completionHandler != NULL) {
+                                                                 completionHandler(string ?: defaultText);
+                                                             }
+                                                         }];
     // Initialize ok action.
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-        // Get inputed string.
-        NSString *string = [alert.textFields firstObject].text;
-        if (completionHandler != NULL) {
-            completionHandler(string?:defaultText);
-        }
-    }];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm")
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:^(UIAlertAction *action) {
+                                                         [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                         // Get inputed string.
+                                                         NSString *string = [alert.textFields firstObject].text;
+                                                         if (completionHandler != NULL) {
+                                                             completionHandler(string ?: defaultText);
+                                                         }
+                                                     }];
     // Add actions.
     [alert addAction:cancelAction];
     [alert addAction:okAction];
@@ -1308,30 +1340,37 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     // For appstore and system defines. This action will jump to AppStore app or the system apps.
     if ([[NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] 'https://itunes.apple.com/' OR SELF BEGINSWITH[cd] 'mailto:' OR SELF BEGINSWITH[cd] 'tel:' OR SELF BEGINSWITH[cd] 'telprompt:'"] evaluateWithObject:components.URL.absoluteString]) {
         if ([[NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] 'https://itunes.apple.com/'"] evaluateWithObject:components.URL.absoluteString] && !_reviewsAppInAppStore) {
-            [[AXPracticalHUD sharedHUD] showNormalInView:self.view.window text:nil detail:nil configuration:^(AXPracticalHUD *HUD) {
-                // Disabled the background touching lock to fix the
-                // issue: https://github.com/devedbox/AXWebViewController/issues/67
-                // HUD.lockBackground = YES;
-                HUD.removeFromSuperViewOnHide = YES;
-            }];
+            [[AXPracticalHUD sharedHUD] showNormalInView:self.view.window
+                                                    text:nil
+                                                  detail:nil
+                                           configuration:^(AXPracticalHUD *HUD) {
+                                               // Disabled the background touching lock to fix the
+                                               // issue: https://github.com/devedbox/AXWebViewController/issues/67
+                                               // HUD.lockBackground = YES;
+                                               HUD.removeFromSuperViewOnHide = YES;
+                                           }];
             SKStoreProductViewController *productVC = [[SKStoreProductViewController alloc] init];
-            productVC.delegate = self;
+            productVC.delegate                      = self;
             NSError *error;
-            NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:@"id[1-9]\\d*" options:NSRegularExpressionCaseInsensitive error:&error];
+            NSRegularExpression *regex   = [[NSRegularExpression alloc] initWithPattern:@"id[1-9]\\d*" options:NSRegularExpressionCaseInsensitive error:&error];
             NSTextCheckingResult *result = [regex firstMatchInString:components.URL.absoluteString options:NSMatchingReportCompletion range:NSMakeRange(0, components.URL.absoluteString.length)];
-            
+
             if (!error && result) {
-                NSRange range = NSMakeRange(result.range.location+2, result.range.length-2);
-                [productVC loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier: @([[components.URL.absoluteString substringWithRange:range] integerValue])} completionBlock:^(BOOL result, NSError * _Nullable error) {
-                    if (!result || error) {
-                        [[AXPracticalHUD sharedHUD] showErrorInView:self.view.window text:error.localizedDescription detail:nil configuration:^(AXPracticalHUD *HUD) {
-                            HUD.removeFromSuperViewOnHide = YES;
-                        }];
-                        [[AXPracticalHUD sharedHUD] hide:YES afterDelay:1.5 completion:NULL];
-                    } else {
-                        [[AXPracticalHUD sharedHUD] hide:YES afterDelay:0.5 completion:NULL];
-                    }
-                }];
+                NSRange range = NSMakeRange(result.range.location + 2, result.range.length - 2);
+                [productVC loadProductWithParameters:@{ SKStoreProductParameterITunesItemIdentifier: @([[components.URL.absoluteString substringWithRange:range] integerValue]) }
+                    completionBlock:^(BOOL result, NSError *_Nullable error) {
+                        if (!result || error) {
+                            [[AXPracticalHUD sharedHUD] showErrorInView:self.view.window
+                                                                   text:error.localizedDescription
+                                                                 detail:nil
+                                                          configuration:^(AXPracticalHUD *HUD) {
+                                                              HUD.removeFromSuperViewOnHide = YES;
+                                                          }];
+                            [[AXPracticalHUD sharedHUD] hide:YES afterDelay:1.5 completion:NULL];
+                        } else {
+                            [[AXPracticalHUD sharedHUD] hide:YES afterDelay:0.5 completion:NULL];
+                        }
+                    }];
                 [self presentViewController:productVC animated:YES completion:NULL];
                 decisionHandler(WKNavigationActionPolicyCancel);
                 return;
@@ -1348,8 +1387,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         }
         decisionHandler(WKNavigationActionPolicyCancel);
         return;
-    } else if (![[NSPredicate predicateWithFormat:@"SELF MATCHES[cd] 'https' OR SELF MATCHES[cd] 'http' OR SELF MATCHES[cd] 'file' OR SELF MATCHES[cd] 'about'"] evaluateWithObject:components.scheme]) {// For any other schema but not `https`、`http` and `file`.
-        if (@available(iOS 8.0, *)) { // openURL if ios version is low then 8 , app will crash
+    } else if (![[NSPredicate predicateWithFormat:@"SELF MATCHES[cd] 'https' OR SELF MATCHES[cd] 'http' OR SELF MATCHES[cd] 'file' OR SELF MATCHES[cd] 'about'"] evaluateWithObject:components.scheme]) { // For any other schema but not `https`、`http` and `file`.
+        if (@available(iOS 8.0, *)) {                                                                                                                                                                     // openURL if ios version is low then 8 , app will crash
             if (!self.checkUrlCanOpen || [[UIApplication sharedApplication] canOpenURL:components.URL]) {
                 if (@available(iOS 10.0, *)) {
                     [UIApplication.sharedApplication openURL:components.URL options:@{} completionHandler:NULL];
@@ -1357,7 +1396,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
                     [[UIApplication sharedApplication] openURL:components.URL];
                 }
             }
-        }else{
+        } else {
             if ([[UIApplication sharedApplication] canOpenURL:components.URL]) {
                 [[UIApplication sharedApplication] openURL:components.URL];
             }
@@ -1366,7 +1405,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         decisionHandler(WKNavigationActionPolicyCancel);
         return;
     }
-    
+
     // URL actions for 404 and Errors:
     if ([[NSPredicate predicateWithFormat:@"SELF ENDSWITH[cd] %@ OR SELF ENDSWITH[cd] %@", kAX404NotFoundURLKey, kAXNetworkErrorURLKey] evaluateWithObject:components.URL.absoluteString]) {
         // Reload the original URL.
@@ -1391,7 +1430,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [self _didStartLoadWithObj:navigation];
 }
 
-- (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(null_unspecified WKNavigation *)navigation {}
+- (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(null_unspecified WKNavigation *)navigation {
+}
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
     if (error.code == NSURLErrorCancelled) {
@@ -1401,7 +1441,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [self didFailLoadWithError:error];
 }
 
-- (void)webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation {}
+- (void)webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation {
+}
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation {
     [self didFinishLoad];
@@ -1417,8 +1458,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *__nullable credential))completionHandler {
     // !!!: Do add the security policy if using a custom credential.
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
-    __block NSURLCredential *credential = nil;
-    
+    __block NSURLCredential *credential              = nil;
+
     if (self.challengeHandler) {
         disposition = self.challengeHandler(webView, challenge, &credential);
     } else {
@@ -1437,7 +1478,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             disposition = NSURLSessionAuthChallengePerformDefaultHandling;
         }
     }
-    
+
     if (completionHandler) {
         completionHandler(disposition, credential);
     }
@@ -1448,13 +1489,15 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     // Get the host name.
     NSString *host = webView.URL.host;
     // Initialize alert view controller.
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:host?:AXWebViewControllerLocalizedString(@"messages", nil) message:AXWebViewControllerLocalizedString(@"terminate", nil) preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:host ?: AXWebViewControllerLocalizedString(@"messages", nil) message:AXWebViewControllerLocalizedString(@"terminate", nil) preferredStyle:UIAlertControllerStyleAlert];
     // Initialize cancel action.
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"cancel", @"cancel") style:UIAlertActionStyleCancel handler:NULL];
     // Initialize ok action.
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        [alert dismissViewControllerAnimated:YES completion:NULL];
-    }];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:AXWebViewControllerLocalizedString(@"confirm", @"confirm")
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:^(UIAlertAction *action) {
+                                                         [alert dismissViewControllerAnimated:YES completion:NULL];
+                                                     }];
     // Add actions.
     [alert addAction:cancelAction];
     [alert addAction:okAction];
@@ -1465,34 +1508,42 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
     // URL actions
     if ([request.URL.absoluteString isEqualToString:kAX404NotFoundURLKey] || [request.URL.absoluteString isEqualToString:kAXNetworkErrorURLKey]) {
-        [self loadURL:_URL]; return NO;
+        [self loadURL:_URL];
+        return NO;
     }
     // Resolve URL. Fixs the issue: https://github.com/devedbox/AXWebViewController/issues/7
     NSURLComponents *components = [[NSURLComponents alloc] initWithString:request.URL.absoluteString];
     // For appstore.
     if ([[NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] 'https://itunes.apple.com/' OR SELF BEGINSWITH[cd] 'mailto:' OR SELF BEGINSWITH[cd] 'tel:' OR SELF BEGINSWITH[cd] 'telprompt:'"] evaluateWithObject:request.URL.absoluteString]) {
         if ([[NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] 'https://itunes.apple.com/'"] evaluateWithObject:components.URL.absoluteString] && !_reviewsAppInAppStore) {
-            [[AXPracticalHUD sharedHUD] showNormalInView:self.view.window text:nil detail:nil configuration:^(AXPracticalHUD *HUD) {
-                HUD.removeFromSuperViewOnHide = YES;
-            }];
+            [[AXPracticalHUD sharedHUD] showNormalInView:self.view.window
+                                                    text:nil
+                                                  detail:nil
+                                           configuration:^(AXPracticalHUD *HUD) {
+                                               HUD.removeFromSuperViewOnHide = YES;
+                                           }];
             SKStoreProductViewController *productVC = [[SKStoreProductViewController alloc] init];
-            productVC.delegate = self;
+            productVC.delegate                      = self;
             NSError *error;
-            NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:@"id[1-9]\\d*" options:NSRegularExpressionCaseInsensitive error:&error];
+            NSRegularExpression *regex   = [[NSRegularExpression alloc] initWithPattern:@"id[1-9]\\d*" options:NSRegularExpressionCaseInsensitive error:&error];
             NSTextCheckingResult *result = [regex firstMatchInString:components.URL.absoluteString options:NSMatchingReportCompletion range:NSMakeRange(0, components.URL.absoluteString.length)];
-            
+
             if (!error && result) {
-                NSRange range = NSMakeRange(result.range.location+2, result.range.length-2);
-                [productVC loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier: @([[components.URL.absoluteString substringWithRange:range] integerValue])} completionBlock:^(BOOL result, NSError * _Nullable error) {
-                    if (!result || error) {
-                        [[AXPracticalHUD sharedHUD] showErrorInView:self.view.window text:error.localizedDescription detail:nil configuration:^(AXPracticalHUD *HUD) {
-                            HUD.removeFromSuperViewOnHide = YES;
-                        }];
-                        [[AXPracticalHUD sharedHUD] hide:YES afterDelay:1.5 completion:NULL];
-                    } else {
-                        [[AXPracticalHUD sharedHUD] hide:YES afterDelay:0.5 completion:NULL];
-                    }
-                }];
+                NSRange range = NSMakeRange(result.range.location + 2, result.range.length - 2);
+                [productVC loadProductWithParameters:@{ SKStoreProductParameterITunesItemIdentifier: @([[components.URL.absoluteString substringWithRange:range] integerValue]) }
+                    completionBlock:^(BOOL result, NSError *_Nullable error) {
+                        if (!result || error) {
+                            [[AXPracticalHUD sharedHUD] showErrorInView:self.view.window
+                                                                   text:error.localizedDescription
+                                                                 detail:nil
+                                                          configuration:^(AXPracticalHUD *HUD) {
+                                                              HUD.removeFromSuperViewOnHide = YES;
+                                                          }];
+                            [[AXPracticalHUD sharedHUD] hide:YES afterDelay:1.5 completion:NULL];
+                        } else {
+                            [[AXPracticalHUD sharedHUD] hide:YES afterDelay:0.5 completion:NULL];
+                        }
+                    }];
                 [self presentViewController:productVC animated:YES completion:NULL];
                 decisionHandler(WKNavigationActionPolicyCancel);
                 return;
@@ -1501,25 +1552,24 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             }
         }
         if ([[UIApplication sharedApplication] canOpenURL:request.URL]) {
-            if (AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS10_0)/*UIDevice.currentDevice.systemVersion.floatValue >= 10.0*/) {
+            if (AX_WEB_VIEW_CONTROLLER_AVAILABLE_ON(_kiOS10_0) /*UIDevice.currentDevice.systemVersion.floatValue >= 10.0*/) {
                 [UIApplication.sharedApplication openURL:request.URL options:@{} completionHandler:NULL];
             } else {
                 [[UIApplication sharedApplication] openURL:request.URL];
             }
         }
         return NO;
-    } else if (![[NSPredicate predicateWithFormat:@"SELF MATCHES[cd] 'https' OR SELF MATCHES[cd] 'http' OR SELF MATCHES[cd] 'file' OR SELF MATCHES[cd] 'about'"] evaluateWithObject:components.scheme]) {// For any other schema.
-        
-        
+    } else if (![[NSPredicate predicateWithFormat:@"SELF MATCHES[cd] 'https' OR SELF MATCHES[cd] 'http' OR SELF MATCHES[cd] 'file' OR SELF MATCHES[cd] 'about'"] evaluateWithObject:components.scheme]) { // For any other schema.
+
         if (@available(iOS 8.0, *)) { // openURL if ios version is low then 8 , app will crash
             if (!self.checkUrlCanOpen || [[UIApplication sharedApplication] canOpenURL:components.URL]) {
                 if (@available(iOS 10.0, *)) {
                     [UIApplication.sharedApplication openURL:components.URL options:@{} completionHandler:NULL];
-                }else{
+                } else {
                     [[UIApplication sharedApplication] openURL:components.URL];
                 }
             }
-        }else{
+        } else {
             if ([[UIApplication sharedApplication] canOpenURL:components.URL]) {
                 [[UIApplication sharedApplication] openURL:components.URL];
             }
@@ -1527,7 +1577,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
         return NO;
     }
-    
+
     switch (navigationType) {
         case UIWebViewNavigationTypeLinkClicked: {
             [self pushCurrentSnapshotViewWithRequest:request];
@@ -1573,7 +1623,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
     if (error.code == NSURLErrorCancelled) {
-        [webView reload]; return;
+        [webView reload];
+        return;
     }
     [self didFailLoadWithError:error];
 }
@@ -1581,8 +1632,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 #pragma mark - NJKWebViewProgressDelegate
 
--(void)webViewProgress:(NJKWebViewProgress *)webViewProgress updateProgress:(float)progress
-{
+- (void)webViewProgress:(NJKWebViewProgress *)webViewProgress updateProgress:(float)progress {
     // Add progress view to navigation bar.
     if (self.navigationController && self.progressView.superview != self.navigationController.navigationBar) {
         [self updateFrameOfProgressView];
@@ -1600,27 +1650,27 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (void)_updateTitleOfWebVC {
     NSString *title = self.title;
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    title = title.length>0 ? title: [_webView title];
+    title = title.length > 0 ? title : [_webView title];
 #else
-    title = title.length>0 ? title: [_webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+    title = title.length > 0 ? title : [_webView stringByEvaluatingJavaScriptFromString:@"document.title"];
 #endif
     if (title.length > _maxAllowedTitleLength) {
-        title = [[title substringToIndex:_maxAllowedTitleLength-1] stringByAppendingString:@"…"];
+        title = [[title substringToIndex:_maxAllowedTitleLength - 1] stringByAppendingString:@"…"];
     }
-    self.navigationItem.title = title.length>0 ? title : AXWebViewControllerLocalizedString(@"browsing the web", @"browsing the web");
+    self.navigationItem.title = title.length > 0 ? title : AXWebViewControllerLocalizedString(@"browsing the web", @"browsing the web");
 }
 
 - (void)updateFrameOfProgressView {
-    CGFloat progressBarHeight = 2.0f;
+    CGFloat progressBarHeight  = 2.0f;
     CGRect navigationBarBounds = self.navigationController.navigationBar.bounds;
-    CGRect barFrame = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
-    _progressView.frame = barFrame;
+    CGRect barFrame            = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
+    _progressView.frame        = barFrame;
 }
 
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(void)pushCurrentSnapshotViewWithRequest:(NSURLRequest*)request{
-    NSURLRequest* lastRequest = (NSURLRequest*)[[self.snapshots lastObject] objectForKey:@"request"];
-    
+- (void)pushCurrentSnapshotViewWithRequest:(NSURLRequest *)request {
+    NSURLRequest *lastRequest = (NSURLRequest *)[[self.snapshots lastObject] objectForKey:@"request"];
+
     // 如果url是很奇怪的就不push
     if ([request.URL.absoluteString isEqualToString:@"about:blank"]) {
         return;
@@ -1629,15 +1679,14 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if ([lastRequest.URL.absoluteString isEqualToString:request.URL.absoluteString]) {
         return;
     }
-    
-    UIView* currentSnapshotView = [self.webView snapshotViewAfterScreenUpdates:YES];
+
+    UIView *currentSnapshotView = [self.webView snapshotViewAfterScreenUpdates:YES];
     [self.snapshots addObject:
-     @{@"request":request,
-       @"snapShotView":currentSnapshotView}
-     ];
+                        @{ @"request": request,
+                           @"snapShotView": currentSnapshotView }];
 }
 
--(void)startPopSnapshotView{
+- (void)startPopSnapshotView {
     if (self.isSwipingBack) {
         return;
     }
@@ -1646,97 +1695,101 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     }
     self.isSwipingBack = YES;
     //create a center of scrren
-    CGPoint center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
-    
+    CGPoint center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2);
+
     self.currentSnapshotView = [self.webView snapshotViewAfterScreenUpdates:YES];
-    
+
     //add shadows just like UINavigationController
-    self.currentSnapshotView.layer.shadowColor = [UIColor blackColor].CGColor;
-    self.currentSnapshotView.layer.shadowOffset = CGSizeMake(3, 3);
-    self.currentSnapshotView.layer.shadowRadius = 5;
+    self.currentSnapshotView.layer.shadowColor   = [UIColor blackColor].CGColor;
+    self.currentSnapshotView.layer.shadowOffset  = CGSizeMake(3, 3);
+    self.currentSnapshotView.layer.shadowRadius  = 5;
     self.currentSnapshotView.layer.shadowOpacity = 0.75;
-    
+
     //move to center of screen
     self.currentSnapshotView.center = center;
-    
-    self.previousSnapshotView = (UIView*)[[self.snapshots lastObject] objectForKey:@"snapShotView"];
+
+    self.previousSnapshotView = (UIView *)[[self.snapshots lastObject] objectForKey:@"snapShotView"];
     center.x -= 60;
     self.previousSnapshotView.center = center;
-    self.previousSnapshotView.alpha = 1;
-    self.view.backgroundColor = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
-    
+    self.previousSnapshotView.alpha  = 1;
+    self.view.backgroundColor        = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
+
     [self.view addSubview:self.previousSnapshotView];
     [self.view addSubview:self.swipingBackgoundView];
     [self.view addSubview:self.currentSnapshotView];
 }
 
--(void)popSnapShotViewWithPanGestureDistance:(CGFloat)distance{
+- (void)popSnapShotViewWithPanGestureDistance:(CGFloat)distance {
     if (!self.isSwipingBack) {
         return;
     }
-    
+
     if (distance <= 0) {
         return;
     }
-    
-    CGFloat boundsWidth = CGRectGetWidth(self.view.bounds);
+
+    CGFloat boundsWidth  = CGRectGetWidth(self.view.bounds);
     CGFloat boundsHeight = CGRectGetHeight(self.view.bounds);
-    
-    CGPoint currentSnapshotViewCenter = CGPointMake(boundsWidth/2, boundsHeight/2);
+
+    CGPoint currentSnapshotViewCenter = CGPointMake(boundsWidth / 2, boundsHeight / 2);
     currentSnapshotViewCenter.x += distance;
-    CGPoint previousSnapshotViewCenter = CGPointMake(boundsWidth/2, boundsHeight/2);
-    previousSnapshotViewCenter.x -= (boundsWidth - distance)*60/boundsWidth;
-    
-    self.currentSnapshotView.center = currentSnapshotViewCenter;
+    CGPoint previousSnapshotViewCenter = CGPointMake(boundsWidth / 2, boundsHeight / 2);
+    previousSnapshotViewCenter.x -= (boundsWidth - distance) * 60 / boundsWidth;
+
+    self.currentSnapshotView.center  = currentSnapshotViewCenter;
     self.previousSnapshotView.center = previousSnapshotViewCenter;
-    self.swipingBackgoundView.alpha = (boundsWidth - distance)/boundsWidth;
+    self.swipingBackgoundView.alpha  = (boundsWidth - distance) / boundsWidth;
 }
 
--(void)endPopSnapShotView{
+- (void)endPopSnapShotView {
     if (!self.isSwipingBack) {
         return;
     }
-    
+
     //prevent the user touch for now
     self.view.userInteractionEnabled = NO;
-    
-    CGFloat boundsWidth = CGRectGetWidth(self.view.bounds);
+
+    CGFloat boundsWidth  = CGRectGetWidth(self.view.bounds);
     CGFloat boundsHeight = CGRectGetHeight(self.view.bounds);
-    
+
     if (self.currentSnapshotView.center.x >= boundsWidth) {
         // pop success
-        [UIView animateWithDuration:0.2 animations:^{
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-            
-            self.currentSnapshotView.center = CGPointMake(boundsWidth*3/2, boundsHeight/2);
-            self.previousSnapshotView.center = CGPointMake(boundsWidth/2, boundsHeight/2);
-            self.swipingBackgoundView.alpha = 0;
-        }completion:^(BOOL finished) {
-            [self.previousSnapshotView removeFromSuperview];
-            [self.swipingBackgoundView removeFromSuperview];
-            [self.currentSnapshotView removeFromSuperview];
-            [self goBackClicked];
-            [self.snapshots removeLastObject];
-            self.view.userInteractionEnabled = YES;
-            
-            self.isSwipingBack = NO;
-        }];
-    }else{
+        [UIView animateWithDuration:0.2
+            animations:^{
+                [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+
+                self.currentSnapshotView.center  = CGPointMake(boundsWidth * 3 / 2, boundsHeight / 2);
+                self.previousSnapshotView.center = CGPointMake(boundsWidth / 2, boundsHeight / 2);
+                self.swipingBackgoundView.alpha  = 0;
+            }
+            completion:^(BOOL finished) {
+                [self.previousSnapshotView removeFromSuperview];
+                [self.swipingBackgoundView removeFromSuperview];
+                [self.currentSnapshotView removeFromSuperview];
+                [self goBackClicked];
+                [self.snapshots removeLastObject];
+                self.view.userInteractionEnabled = YES;
+
+                self.isSwipingBack = NO;
+            }];
+    } else {
         //pop fail
-        [UIView animateWithDuration:0.2 animations:^{
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-            
-            self.currentSnapshotView.center = CGPointMake(boundsWidth/2, boundsHeight/2);
-            self.previousSnapshotView.center = CGPointMake(boundsWidth/2-60, boundsHeight/2);
-            self.previousSnapshotView.alpha = 1;
-        }completion:^(BOOL finished) {
-            [self.previousSnapshotView removeFromSuperview];
-            [self.swipingBackgoundView removeFromSuperview];
-            [self.currentSnapshotView removeFromSuperview];
-            self.view.userInteractionEnabled = YES;
-            
-            self.isSwipingBack = NO;
-        }];
+        [UIView animateWithDuration:0.2
+            animations:^{
+                [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+
+                self.currentSnapshotView.center  = CGPointMake(boundsWidth / 2, boundsHeight / 2);
+                self.previousSnapshotView.center = CGPointMake(boundsWidth / 2 - 60, boundsHeight / 2);
+                self.previousSnapshotView.alpha  = 1;
+            }
+            completion:^(BOOL finished) {
+                [self.previousSnapshotView removeFromSuperview];
+                [self.swipingBackgoundView removeFromSuperview];
+                [self.currentSnapshotView removeFromSuperview];
+                self.view.userInteractionEnabled = YES;
+
+                self.isSwipingBack = NO;
+            }];
     }
 }
 
@@ -1744,12 +1797,10 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (!_loading) {
         if (_progressView.progress >= 1.0) {
             [_updating invalidate];
-        }
-        else {
+        } else {
             [_progressView setProgress:_progressView.progress + 0.05 animated:YES];
         }
-    }
-    else {
+    } else {
         [_progressView setProgress:_progressView.progress + 0.05 animated:YES];
         if (_progressView.progress >= 0.9) {
             _progressView.progress = 0.9;
@@ -1760,10 +1811,10 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)setupSubviews {
     // Add from label and constraints.
-    id topLayoutGuide = self.topLayoutGuide;
+    id topLayoutGuide    = self.topLayoutGuide;
     id bottomLayoutGuide = self.bottomLayoutGuide;
-    
-    // Add web view.
+
+// Add web view.
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     // Set the content inset of scroll view to the max y position of navigation bar to adjust scroll view content inset.
     // To fix issue: https://github.com/devedbox/AXWebViewController/issues/10
@@ -1772,77 +1823,78 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     contentInset.top = CGRectGetMaxY(self.navigationController.navigationBar.frame);
     _webView.scrollView.contentInset = contentInset;
      */
-    
+
     // Add background label to view.
     // UIView *contentView = _webView.scrollView.subviews.firstObject;
     [self.containerView addSubview:self.backgroundLabel];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_backgroundLabel(<=width)]" options:0 metrics:@{@"width":@(self.view.bounds.size.width)} views:NSDictionaryOfVariableBindings(_backgroundLabel)]];
+    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_backgroundLabel(<=width)]" options:0 metrics:@{ @"width": @(self.view.bounds.size.width) } views:NSDictionaryOfVariableBindings(_backgroundLabel)]];
     [self.containerView addConstraint:[NSLayoutConstraint constraintWithItem:_backgroundLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.containerView attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0]];
     // [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_backgroundLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeTop multiplier:1.0 constant:-20]];
-    
+
     [self.containerView addSubview:self.webView];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView)]];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView, topLayoutGuide, bottomLayoutGuide, _backgroundLabel)]];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[_backgroundLabel]-20-[_webView]" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_backgroundLabel, _webView)]];
-    
+
     [self.containerView bringSubviewToFront:_backgroundLabel];
 #else
-    [self.view insertSubview:self.backgroundLabel atIndex:0];
+    [self.view insertSubview:self.backgroundLabel
+                     atIndex:0];
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-8-[_backgroundLabel]-8-|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_backgroundLabel)]];
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[topLayoutGuide]-10-[_backgroundLabel]-(>=0)-|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_backgroundLabel, topLayoutGuide)]];
     [self.view addSubview:self.webView];
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView)]];
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[topLayoutGuide][_webView][bottomLayoutGuide]" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView, topLayoutGuide, bottomLayoutGuide)]];
 #endif
-    
+
     self.progressView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), 2);
     [self.view addSubview:self.progressView];
     [self.view bringSubviewToFront:self.progressView];
 }
 
 - (void)updateToolbarItems {
-    self.backBarButtonItem.enabled = self.self.webView.canGoBack;
+    self.backBarButtonItem.enabled    = self.self.webView.canGoBack;
     self.forwardBarButtonItem.enabled = self.self.webView.canGoForward;
-    self.actionBarButtonItem.enabled = !self.self.webView.isLoading;
-    
+    self.actionBarButtonItem.enabled  = !self.self.webView.isLoading;
+
     UIBarButtonItem *refreshStopBarButtonItem = self.self.webView.isLoading ? self.stopBarButtonItem : self.refreshBarButtonItem;
-    
-    UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+
+    UIBarButtonItem *fixedSpace    = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    
+
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         fixedSpace.width = 35.0f;
-        NSArray *items = [NSArray arrayWithObjects:fixedSpace, refreshStopBarButtonItem, fixedSpace, self.backBarButtonItem, fixedSpace, self.forwardBarButtonItem, fixedSpace, self.actionBarButtonItem, nil];
-        
+        NSArray *items   = [NSArray arrayWithObjects:fixedSpace, refreshStopBarButtonItem, fixedSpace, self.backBarButtonItem, fixedSpace, self.forwardBarButtonItem, fixedSpace, self.actionBarButtonItem, nil];
+
         self.navigationItem.rightBarButtonItems = items.reverseObjectEnumerator.allObjects;
     } else {
-        NSArray *items = [NSArray arrayWithObjects: fixedSpace, self.backBarButtonItem, flexibleSpace, self.forwardBarButtonItem, flexibleSpace, refreshStopBarButtonItem, flexibleSpace, self.actionBarButtonItem, fixedSpace, nil];
-        
-        self.navigationController.toolbar.barStyle = self.navigationController.navigationBar.barStyle;
-        self.navigationController.toolbar.tintColor = self.navigationController.navigationBar.tintColor;
+        NSArray *items = [NSArray arrayWithObjects:fixedSpace, self.backBarButtonItem, flexibleSpace, self.forwardBarButtonItem, flexibleSpace, refreshStopBarButtonItem, flexibleSpace, self.actionBarButtonItem, fixedSpace, nil];
+
+        self.navigationController.toolbar.barStyle     = self.navigationController.navigationBar.barStyle;
+        self.navigationController.toolbar.tintColor    = self.navigationController.navigationBar.tintColor;
         self.navigationController.toolbar.barTintColor = self.navigationController.navigationBar.barTintColor;
-        self.toolbarItems = items;
+        self.toolbarItems                              = items;
     }
 }
 
 - (void)updateNavigationItems {
     [self.navigationItem setLeftBarButtonItems:nil animated:NO];
-    if (self.webView.canGoBack/* || self.webView.backForwardList.backItem*/) {// Web view can go back means a lot requests exist.
-        UIBarButtonItem *spaceButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-        spaceButtonItem.width = -6.5;
+    if (self.webView.canGoBack /* || self.webView.backForwardList.backItem*/) { // Web view can go back means a lot requests exist.
+        UIBarButtonItem *spaceButtonItem                                  = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+        spaceButtonItem.width                                             = -6.5;
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
         if (self.navigationController.viewControllers.count == 1) {
-            NSMutableArray *leftBarButtonItems = [NSMutableArray arrayWithArray:@[spaceButtonItem,self.navigationBackBarButtonItem]];
+            NSMutableArray *leftBarButtonItems = [NSMutableArray arrayWithArray:@[spaceButtonItem, self.navigationBackBarButtonItem]];
             // If the top view controller of the navigation controller is current vc, the close item is ignored.
-            if (self.showsNavigationCloseBarButtonItem && self.navigationController.topViewController != self){
+            if (self.showsNavigationCloseBarButtonItem && self.navigationController.topViewController != self) {
                 [leftBarButtonItems addObject:self.navigationCloseBarButtonItem];
             }
-            
+
             [self.navigationItem setLeftBarButtonItems:leftBarButtonItems animated:NO];
         } else {
-            if (self.showsNavigationCloseBarButtonItem){
+            if (self.showsNavigationCloseBarButtonItem) {
                 [self.navigationItem setLeftBarButtonItems:@[self.navigationCloseBarButtonItem] animated:NO];
-            }else{
+            } else {
                 [self.navigationItem setLeftBarButtonItems:@[] animated:NO];
             }
         }
@@ -1854,83 +1906,77 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)hookWebContentCommitPreviewHandler {
     // Find the `WKContentView` in the webview.
-    __weak typeof(self) wself = self;
-    for (UIView *_view in _webView.scrollView.subviews) {
-        if ([_view isKindOfClass:NSClassFromString(@"WKContentView")]) {
-            id _previewItemController = object_getIvar(_view, class_getInstanceVariable([_view class], "_previewItemController"));
-            Class _class = [_previewItemController class];
-            SEL _performCustomCommitSelector = NSSelectorFromString(@"previewInteractionController:interactionProgress:forRevealAtLocation:inSourceView:containerView:");
-            [_previewItemController aspect_hookSelector:_performCustomCommitSelector withOptions:AspectPositionAfter usingBlock:^() {
-                UIViewController *pred = [_previewItemController valueForKeyPath:@"presentedViewController"];
-                [pred aspect_hookSelector:NSSelectorFromString(@"_addRemoteView") withOptions:AspectPositionAfter usingBlock:^() {
-                    UIViewController *_remoteViewController = object_getIvar(pred, class_getInstanceVariable([pred class], "_remoteViewController"));
-                    
-                    [_remoteViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:AspectPositionAfter usingBlock:^() {
-                        _remoteViewController.view.tintColor = wself.navigationController.navigationBar.tintColor;
-                    } error:NULL];
-                } error:NULL];
-                
-                NSArray *ddActions = [pred valueForKeyPath:@"ddActions"];
-                id openURLAction = [ddActions firstObject];
-                
-                [openURLAction aspect_hookSelector:NSSelectorFromString(@"perform") withOptions:AspectPositionInstead usingBlock:^ () {
-                    NSURL *_url = object_getIvar(openURLAction, class_getInstanceVariable([openURLAction class], "_url"));
-                    [wself loadURL:_url];
-                } error:NULL];
-                
-                id _lookupItem = object_getIvar(_previewItemController, class_getInstanceVariable([_class class], "_lookupItem"));
-                [_lookupItem aspect_hookSelector:NSSelectorFromString(@"commit") withOptions:AspectPositionInstead usingBlock:^() {
-                    NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
-                    [wself loadURL:_url];
-                } error:NULL];
-                [_lookupItem aspect_hookSelector:NSSelectorFromString(@"commitWithTransitionForPreviewViewController:inViewController:completion:") withOptions:AspectPositionInstead usingBlock:^() {
-                    NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
-                    [wself loadURL:_url];
-                } error:NULL];
-                /*
-                 UIWindow
-                 -UITransitionView
-                 --UIVisualEffectView
-                 ---_UIVisualEffectContentView
-                 ----UIView
-                 -----_UIPreviewActionSheetView
-                 */
-                /*
-                 for (UIView * transitionView in [UIApplication sharedApplication].keyWindow.subviews) {
-                 if ([transitionView isMemberOfClass:NSClassFromString(@"UITransitionView")]) {
-                 transitionView.tintColor = wself.navigationController.navigationBar.tintColor;
-                 for (UIView *__view in transitionView.subviews) {
-                 if ([__view isMemberOfClass:NSClassFromString(@"UIVisualEffectView")]) {
-                 for (UIView *___view in __view.subviews) {
-                 if ([___view isMemberOfClass:NSClassFromString(@"_UIVisualEffectContentView")]) {
-                 for (UIView *____view in ___view.subviews) {
-                 if ([____view isMemberOfClass:NSClassFromString(@"UIView")]) {
-                 __weak typeof(____view) w____view = ____view;
-                 [____view aspect_hookSelector:@selector(addSubview:) withOptions:AspectPositionAfter usingBlock:^() {
-                 for (UIView *actionSheet in w____view.subviews) {
-                 if ([actionSheet isMemberOfClass:NSClassFromString(@"_UIPreviewActionSheetView")]) {
-                 break;
-                 }
-                 }
-                 } error:NULL];
-                 }
-                 }break;
-                 }
-                 }break;
-                 }
-                 }break;
-                 }
-                 }
-                 */
-            } error:NULL];
-            break;
-        }
-    }
+    UIView *view = [self.webView.scrollView.subviews objectPassingTest:^BOOL(__kindof UIView *_Nonnull view) {
+        return [view isKindOfClass:NSClassFromString(@"WKContentView")];
+    }];
+
+    if (!view) return;
+
+    @weakify(self);
+    do {
+        id _previewItemController = object_getIvar(view, class_getInstanceVariable([view class], "_previewItemController"));
+        if (!_previewItemController) break;
+
+        Class _class                     = [_previewItemController class];
+        SEL _performCustomCommitSelector = NSSelectorFromString(@"previewInteractionController:interactionProgress:forRevealAtLocation:inSourceView:containerView:");
+        [_previewItemController st_hookInstanceMethod:_performCustomCommitSelector
+                                               option:STOptionAfter
+                                      usingIdentifier:[NSString stringWithFormat:@"hook_%@_after", NSStringFromSelector(_performCustomCommitSelector)]
+                                            withBlock:^() {
+                                                UIViewController *pred = [_previewItemController valueForKeyPath:@"presentedViewController"];
+                                                [pred st_hookInstanceMethod:NSSelectorFromString(@"_addRemoteView")
+                                                                     option:STOptionAfter
+                                                            usingIdentifier:@"hook_addRemoteView_after"
+                                                                  withBlock:^() {
+                                                                      UIViewController *_remoteViewController = object_getIvar(pred, class_getInstanceVariable([pred class], "_remoteViewController"));
+                                                                      [_remoteViewController st_hookInstanceMethod:@selector(viewDidLoad)
+                                                                                                            option:STOptionAfter
+                                                                                                   usingIdentifier:@"_hook_viewDidLoad_after"
+                                                                                                         withBlock:^() {
+                                                                                                             @strongify(self);
+                                                                                                             _remoteViewController.view.tintColor = self.navigationController.navigationBar.tintColor;
+                                                                                                         }];
+                                                                  }];
+
+                                                NSArray *ddActions = [pred valueForKeyPath:@"ddActions"];
+                                                id openURLAction   = [ddActions firstObject];
+
+                                                [openURLAction st_hookInstanceMethod:NSSelectorFromString(@"perform")
+                                                                              option:STOptionInstead
+                                                                     usingIdentifier:@"hook_perform_instead"
+                                                                           withBlock:^() {
+                                                                               @strongify(self);
+                                                                               NSURL *_url = object_getIvar(openURLAction, class_getInstanceVariable([openURLAction class], "_url"));
+                                                                               [self loadURL:_url];
+                                                                           }];
+
+                                                id _lookupItem = object_getIvar(_previewItemController, class_getInstanceVariable([_class class], "_lookupItem"));
+                                                [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commit")
+                                                                            option:STOptionInstead
+                                                                   usingIdentifier:@"hook_commit_instead"
+                                                                         withBlock:^() {
+                                                                             @strongify(self);
+                                                                             NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
+                                                                             [self loadURL:_url];
+                                                                         }];
+                                                [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commitWithTransitionForPreviewViewController:inViewController:completion:")
+                                                                            option:STOptionInstead
+                                                                   usingIdentifier:@"hook_commitWithTransitionForPreviewViewController:inViewController:completion:_instead"
+                                                                         withBlock:^() {
+                                                                             @strongify(self);
+                                                                             NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
+                                                                             [self loadURL:_url];
+                                                                         }];
+                                            }];
+    } while (0);
 }
 
-- (void)orientationChanged:(NSNotification *)note  {
+- (void)orientationChanged:(NSNotification *)note {
     // Update tool bar items of navigation tpye is tool item.
-    if (_navigationType == AXWebViewControllerNavigationToolItem) { [self updateToolbarItems]; return; }
+    if (_navigationType == AXWebViewControllerNavigationToolItem) {
+        [self updateToolbarItems];
+        return;
+    }
     // Otherwise update navigation items.
     [self updateNavigationItems];
 }
@@ -1962,25 +2008,20 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // Inject "-popViewControllerAnimated:"
-        Method originalMethod = class_getInstanceMethod(self, @selector(setProgress:));
-        Method swizzledMethod = class_getInstanceMethod(self, @selector(ax_setProgress:));
-        method_exchangeImplementations(originalMethod, swizzledMethod);
-        
-        originalMethod = class_getInstanceMethod(self, @selector(setProgress:animated:));
-        swizzledMethod = class_getInstanceMethod(self, @selector(ax_setProgress:animated:));
-        method_exchangeImplementations(originalMethod, swizzledMethod);
+        [self swizzleMethod:@selector(setProgress:) withMethod:@selector(ax_setProgress:)];
+        [self swizzleMethod:@selector(setProgress:animated:) withMethod:@selector(ax_setProgress:animated:)];
     });
 }
 
 - (void)ax_setProgress:(float)progress {
     [self ax_setProgress:progress];
-    
+
     [self checkHiddenWhenProgressApproachFullSize];
 }
 
 - (void)ax_setProgress:(float)progress animated:(BOOL)animated {
     [self ax_setProgress:progress animated:animated];
-    
+
     [self checkHiddenWhenProgressApproachFullSize];
 }
 
@@ -1988,28 +2029,32 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (!self.ax_hiddenWhenProgressApproachFullSize) {
         return;
     }
-    
+
     float progress = self.progress;
     if (progress < 1) {
         if (self.hidden) {
             self.hidden = NO;
         }
     } else if (progress >= 1) {
-        [UIView animateWithDuration:0.35 delay:0.15 options:7 animations:^{
-            self.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            if (finished) {
-                self.hidden = YES;
-                self.progress = 0.0;
-                self.alpha = 1.0;
-                // Update the navigation itmes if the delegate is not being triggered.
-                if (self.ax_webViewController.navigationType == AXWebViewControllerNavigationBarItem) {
-                    [self.ax_webViewController updateNavigationItems];
-                } else {
-                    [self.ax_webViewController updateToolbarItems];
-                }
+        [UIView animateWithDuration:0.35
+            delay:0.15
+            options:7
+            animations:^{
+                self.alpha = 0.0;
             }
-        }];
+            completion:^(BOOL finished) {
+                if (finished) {
+                    self.hidden   = YES;
+                    self.progress = 0.0;
+                    self.alpha    = 1.0;
+                    // Update the navigation itmes if the delegate is not being triggered.
+                    if (self.ax_webViewController.navigationType == AXWebViewControllerNavigationBarItem) {
+                        [self.ax_webViewController updateNavigationItems];
+                    } else {
+                        [self.ax_webViewController updateToolbarItems];
+                    }
+                }
+            }];
     }
 }
 
@@ -2035,7 +2080,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 @implementation _AXWebViewProgressView
 - (void)setProgress:(float)progress animated:(BOOL)animated {
     [super setProgress:progress animated:animated];
-    
+
     if (progress >= 1.0) {
         if (_webViewController.navigationType == AXWebViewControllerNavigationBarItem) {
             [_webViewController updateNavigationItems];
