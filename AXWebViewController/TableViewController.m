@@ -60,6 +60,7 @@
         case 2:
         {
             AXWebViewController *webVC = [[AXWebViewController alloc] initWithAddress:@"http://www.baidu.com"];
+            webVC.progressTintColor = UIColor.redColor;
             UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:webVC];
             nav.navigationBar.tintColor = [UIColor colorWithRed:0.322 green:0.322 blue:0.322 alpha:1.00];
             [self presentViewController:nav animated:YES completion:NULL];

@@ -23,22 +23,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-#ifndef __IPHONE_8_0
-#define __IPHONE_8_0      80000
-#endif
-#ifndef __IPHONE_9_0
-#define __IPHONE_9_0      90000
-#endif
-
-#ifndef AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-#define AX_WEB_VIEW_CONTROLLER_USING_WEBKIT __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-// #define AX_WEB_VIEW_CONTROLLER_USING_WEBKIT 1
-#endif
-
-#ifndef AX_WEB_VIEW_CONTROLLER_DEFINES_PROXY
-#define AX_WEB_VIEW_CONTROLLER_DEFINES_PROXY AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-#endif
-
 #ifndef AX_WEB_VIEW_CONTROLLER_AVAILABLITY
 #define AX_WEB_VIEW_CONTROLLER_AVAILABLITY BOOL AX_WEB_VIEW_CONTROLLER_iOS8_0_AVAILABLE(void);\
                                            BOOL AX_WEB_VIEW_CONTROLLER_iOS9_0_AVAILABLE(void);\
@@ -46,12 +30,9 @@
 #endif
 
 #import <UIKit/UIKit.h>
-#import <NJKWebViewProgress/NJKWebViewProgress.h>
-#import <NJKWebViewProgress/NJKWebViewProgressView.h>
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 #import <WebKit/WebKit.h>
 #import "AXSecurityPolicy.h"
-#endif
+
 #ifndef AX_REQUIRES_SUPER
 #if __has_attribute(objc_requires_super)
 #define AX_REQUIRES_SUPER __attribute__((objc_requires_super))
@@ -111,7 +92,6 @@ typedef NS_ENUM(NSInteger, AXWebViewControllerNavigationType) {
 
 AX_WEB_VIEW_CONTROLLER_AVAILABLITY;
 
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 typedef NSURLSessionAuthChallengeDisposition (^WKWebViewDidReceiveAuthenticationChallengeHandler)(WKWebView *webView, NSURLAuthenticationChallenge *challenge, NSURLCredential * _Nullable __autoreleasing * _Nullable credential);
 API_AVAILABLE(ios(8.0))
 @interface AXWebViewController : UIViewController <WKUIDelegate, WKNavigationDelegate>
@@ -120,52 +100,44 @@ API_AVAILABLE(ios(8.0))
     WKWebView *_webView;
     NSURL *_URL;
 }
-#else
-API_AVAILABLE(ios(7.0))
-@interface AXWebViewController : UIViewController <UIWebViewDelegate>
-{
-@protected
-    UIWebView *_webView;
-    NSURL *_URL;
-}
-#endif
+
 /// Delegate.
-@property(assign, nonatomic) id<AXWebViewControllerDelegate>delegate;
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
+@property (assign, nonatomic) id<AXWebViewControllerDelegate> delegate;
+
 /// WebKit web view.
-@property(readonly, nonatomic) WKWebView *webView;
-#else
-/// Web view.
-@property(readonly, nonatomic) UIWebView *webView;
-#endif
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
+@property (readonly, nonatomic) WKWebView *webView;
+
 /// Default is NO. Enabled to allow present alert views.
-@property(assign, nonatomic) BOOL enabledWebViewUIDelegate;
-#endif
+@property (assign, nonatomic) BOOL enabledWebViewUIDelegate;
+
 /// Open app link in app store app. Default is NO.
-@property(assign, nonatomic) BOOL reviewsAppInAppStore;
+@property (assign, nonatomic) BOOL reviewsAppInAppStore;
 /// Max length of title string content. Default is 10.
-@property(assign, nonatomic) NSUInteger maxAllowedTitleLength;
+@property (assign, nonatomic) NSUInteger maxAllowedTitleLength;
 /// Time out internal.
-@property(assign, nonatomic) NSTimeInterval timeoutInternal;
+@property (assign, nonatomic) NSTimeInterval timeoutInternal;
 /// Cache policy.
-@property(assign, nonatomic) NSURLRequestCachePolicy cachePolicy;
+@property (assign, nonatomic) NSURLRequestCachePolicy cachePolicy;
 /// The based initialized url of the web view controller if any.
-@property(readonly, nonatomic) NSURL *URL;
+@property (readonly, nonatomic) NSURL *URL;
 /// Shows tool bar. Default is YES.
-@property(assign, nonatomic) BOOL showsToolBar;
+@property (assign, nonatomic) BOOL showsToolBar;
 /// Shows background description label. Default is YES.
-@property(assign, nonatomic) BOOL showsBackgroundLabel;
+@property (assign, nonatomic) BOOL showsBackgroundLabel;
 /// Shows navigation close bar button item. Default is YES.
-@property(assign, nonatomic) BOOL showsNavigationCloseBarButtonItem;
+@property (assign, nonatomic) BOOL showsNavigationCloseBarButtonItem;
 /// Shows the title of navigation back bar button item. Default is YES.
-@property(assign, nonatomic) BOOL showsNavigationBackBarButtonItemTitle;
+@property (assign, nonatomic) BOOL showsNavigationBackBarButtonItemTitle;
 /// Check url can open default YES, only work after iOS 8.
-@property(assign, nonatomic) BOOL checkUrlCanOpen API_AVAILABLE(ios(8.0));
+@property (assign, nonatomic) BOOL checkUrlCanOpen API_AVAILABLE(ios(8.0));
 /// Navigation type.
-@property(assign, nonatomic) AXWebViewControllerNavigationType navigationType;
+@property (assign, nonatomic) AXWebViewControllerNavigationType navigationType;
 /// Navigation close bar button item.
-@property(readwrite, nonatomic) UIBarButtonItem *navigationCloseItem;
+@property (readwrite, nonatomic) UIBarButtonItem *navigationCloseItem;
+
+// default use navigationBar.tintColor
+@property (nonatomic, strong) UIColor *progressTintColor;
+
 /// Get a instance of `AXWebViewController` by a url string.
 ///
 /// @param urlString a string of url to be loaded.
@@ -184,7 +156,7 @@ API_AVAILABLE(ios(7.0))
 ///
 /// @return a instance of `AXWebViewController`.
 - (instancetype)initWithRequest:(NSURLRequest *)request;
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
+
 /// Get a instance of `AXWebViewController` by a url and configuration of web view.
 ///
 /// @param URL a URL to be loaded.
@@ -199,7 +171,7 @@ API_AVAILABLE(ios(7.0))
 ///
 /// @return a instance of `AXWebViewController`.
 - (instancetype)initWithRequest:(NSURLRequest *)request configuration:(WKWebViewConfiguration *)configuration;
-#endif
+
 /// Get a instance of `AXWebViewController` by a HTML string and a base URL.
 ///
 /// @param HTMLString a HTML string object.
@@ -235,12 +207,12 @@ API_AVAILABLE(ios(7.0))
 /// Called when web view did start loading. Do not call this directly.
 ///
 - (void)didStartLoad AX_REQUIRES_SUPER NS_DEPRECATED_IOS(2_0, 8_0);
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
+
 /// Called when web view(WKWebView) did start loading. Do not call this directly.
 ///
 /// @param navigation Navigation object of the current request info.
 - (void)didStartLoadWithNavigation:(WKNavigation *)navigation AX_REQUIRES_SUPER NS_AVAILABLE(10_10, 8_0);
-#endif
+
 /// Called when web view did finish loading. Do not call this directly.
 ///
 - (void)didFinishLoad AX_REQUIRES_SUPER;
@@ -269,7 +241,6 @@ API_AVAILABLE(ios(7.0))
 @property(readonly, nonatomic) UILabel *descriptionLabel;
 @end
 
-#if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 @interface AXWebViewController (Security)
 /// Challenge handler for the credential.
 @property(copy, nonatomic, nullable) WKWebViewDidReceiveAuthenticationChallengeHandler challengeHandler;
@@ -277,5 +248,5 @@ API_AVAILABLE(ios(7.0))
 /// `AXWebViewController` uses the `defaultPolicy` unless otherwise specified.
 @property(readwrite, nonatomic, nullable) AXSecurityPolicy *securityPolicy;
 @end
-#endif
+
 NS_ASSUME_NONNULL_END

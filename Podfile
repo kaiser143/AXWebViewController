@@ -7,5 +7,4 @@ target 'AXWebViewController' do
     pod 'NJKWebViewProgress'
     pod 'AXPracticalHUD'
     pod 'Stinger'
-    pod 'ZKCategories'
 end

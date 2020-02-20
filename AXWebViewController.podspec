@@ -140,7 +140,6 @@ s.requires_arc = true
 s.dependency "AXPracticalHUD"
 s.dependency "AXNavigationBackItemInjection"
 s.dependency "NJKWebViewProgress"
-s.dependency "ZKCategories"
 s.dependency "Stinger"
 
 end
