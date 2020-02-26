@@ -1392,40 +1392,56 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         if ([_view isKindOfClass:NSClassFromString(@"WKContentView")]) {
             id _previewItemController = object_getIvar(_view, class_getInstanceVariable([_view class], "_previewItemController"));
             if (!_previewItemController) break;
-            
-            Class _class = [_previewItemController class];
+
+            Class _class                     = [_previewItemController class];
             SEL _performCustomCommitSelector = NSSelectorFromString(@"previewInteractionController:interactionProgress:forRevealAtLocation:inSourceView:containerView:");
             [_previewItemController st_hookInstanceMethod:_performCustomCommitSelector
                                                    option:STOptionAfter
                                           usingIdentifier:@"hook_previewItemController_after"
-                                                withBlock:^(id<StingerParams> params, UIViewController *pred, id interactionProgress, id location, id view, id containerView) {
-                [pred st_hookInstanceMethod:NSSelectorFromString(@"_addRemoteView") option:STOptionInstead usingIdentifier:@"hook_UIViewController_addRemoteView_after" withBlock:^(id<StingerParams> params) {
-                    UIViewController *_remoteViewController = object_getIvar(pred, class_getInstanceVariable([pred class], "_remoteViewController"));
-                    
-                    [_remoteViewController st_hookInstanceMethod:@selector(viewDidLoad) option:STOptionAfter usingIdentifier:@"hook" withBlock:^(id<StingerParams> params) {
-                        _remoteViewController.view.tintColor = wself.navigationController.navigationBar.tintColor;
-                    }];
-                }];
-                
-                NSArray *ddActions = [pred valueForKeyPath:@"ddActions"];
-                id openURLAction = [ddActions firstObject];
-                
-                [openURLAction st_hookInstanceMethod:NSSelectorFromString(@"perform") option:STOptionInstead usingIdentifier:@"hook_perform_instead" withBlock:^(id<StingerParams> params) {
-                    NSURL *_url = object_getIvar(openURLAction, class_getInstanceVariable([openURLAction class], "_url"));
-                    [wself loadURL:_url];
-                }];
-                
-                id _lookupItem = object_getIvar(_previewItemController, class_getInstanceVariable([_class class], "_lookupItem"));
-                [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commit") option:STOptionInstead usingIdentifier:@"hook_commmit_instead" withBlock:^(id<StingerParams> params) {
-                    NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
-                    [wself loadURL:_url];
-                }];
-                [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commitWithTransitionForPreviewViewController:inViewController:completion:") option:STOptionInstead usingIdentifier:@"hook_commitWithTransitionForPreviewViewController:inViewController:completion:_instead" withBlock:^(id<StingerParams> params) {
-                    NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
-                    [wself loadURL:_url];
-                }];
-            }];
-            
+                                                withBlock:^(id<StingerParams> params, id controller, id interactionProgress, CGPoint location, id view, id containerView) {
+                                                    UIViewController *pred = [_previewItemController valueForKeyPath:@"presentedViewController"];
+                                                    [pred st_hookInstanceMethod:NSSelectorFromString(@"_addRemoteView")
+                                                                         option:STOptionInstead
+                                                                usingIdentifier:@"hook_UIViewController_addRemoteView_after"
+                                                                      withBlock:^(id<StingerParams> params) {
+                                                                          UIViewController *_remoteViewController = object_getIvar(pred, class_getInstanceVariable([pred class], "_remoteViewController"));
+
+                                                                          [_remoteViewController st_hookInstanceMethod:@selector(viewDidLoad)
+                                                                                                                option:STOptionAfter
+                                                                                                       usingIdentifier:@"hook"
+                                                                                                             withBlock:^(id<StingerParams> params) {
+                                                                                                                 _remoteViewController.view.tintColor = wself.navigationController.navigationBar.tintColor;
+                                                                                                             }];
+                                                                      }];
+
+                                                    NSArray *ddActions = [pred valueForKeyPath:@"ddActions"];
+                                                    id openURLAction   = [ddActions firstObject];
+
+                                                    [openURLAction st_hookInstanceMethod:NSSelectorFromString(@"perform")
+                                                                                  option:STOptionInstead
+                                                                         usingIdentifier:@"hook_perform_instead"
+                                                                               withBlock:^(id<StingerParams> params) {
+                                                                                   NSURL *_url = object_getIvar(openURLAction, class_getInstanceVariable([openURLAction class], "_url"));
+                                                                                   [wself loadURL:_url];
+                                                                               }];
+
+                                                    id _lookupItem = object_getIvar(_previewItemController, class_getInstanceVariable([_class class], "_lookupItem"));
+                                                    [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commit")
+                                                                                option:STOptionInstead
+                                                                       usingIdentifier:@"hook_commmit_instead"
+                                                                             withBlock:^(id<StingerParams> params) {
+                                                                                 NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
+                                                                                 [wself loadURL:_url];
+                                                                             }];
+                                                    [_lookupItem st_hookInstanceMethod:NSSelectorFromString(@"commitWithTransitionForPreviewViewController:inViewController:completion:")
+                                                                                option:STOptionInstead
+                                                                       usingIdentifier:@"hook_commitWithTransitionForPreviewViewController:inViewController:completion:_instead"
+                                                                             withBlock:^(id<StingerParams> params) {
+                                                                                 NSURL *_url = object_getIvar(_lookupItem, class_getInstanceVariable([_lookupItem class], "_url"));
+                                                                                 [wself loadURL:_url];
+                                                                             }];
+                                                }];
+
             break;
         }
     }
@@ -1458,6 +1474,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 @end
 
 @implementation UIProgressView (WebKit)
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
