@@ -1394,7 +1394,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             if (!_previewItemController) break;
             
             Class _class = [_previewItemController class];
-            SEL _performCustomCommitSelector = NSSelectorFromString(@"previewInt eractionController:interactionProgress:forRevealAtLocation:inSourceView:containerView:");
+            SEL _performCustomCommitSelector = NSSelectorFromString(@"previewInteractionController:interactionProgress:forRevealAtLocation:inSourceView:containerView:");
             [_previewItemController st_hookInstanceMethod:_performCustomCommitSelector
                                                    option:STOptionAfter
                                           usingIdentifier:@"hook_previewItemController_after"
